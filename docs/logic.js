@@ -23,7 +23,7 @@ var HT = (function () {
 
   var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
 
-  var VERSION = "2.2.0";
+  var VERSION = "2.5.0";
   var CREDIT = "Emanuel Nassimiha 2026";
 
   /* ---------- תאריכים ---------- */
@@ -338,6 +338,75 @@ var HT = (function () {
     return out;
   }
 
+  function avg(list) {
+    var sum = 0;
+    for (var i = 0; i < list.length; i++) sum += list[i];
+    return sum / list.length;
+  }
+
+  /** שורות תובנה על החודש. מחזיר רק מה שיש מספיק נתונים כדי לומר. */
+  function insights(month, monthKeyStr, now) {
+    var out = [];
+    var counted = countedDays(monthKeyStr, now);
+    var d, v;
+
+    var sleeps = [];
+    for (d = 1; d <= counted; d++) {
+      v = getDay(month, d).sleep;
+      if (v !== null) sleeps.push({ day: d, value: v });
+    }
+    if (sleeps.length >= 3) {
+      out.push("ממוצע ציון השינה החודש: " + Math.round(avg(sleeps.map(function (s) { return s.value; }))) + ".");
+    }
+
+    var best = null;
+    month.habits.forEach(function (h) {
+      var on = [], off = [];
+      sleeps.forEach(function (s) {
+        (isMarked(month, s.day, h.id) ? on : off).push(s.value);
+      });
+      if (on.length >= 3 && off.length >= 3) {
+        var diff = avg(on) - avg(off);
+        if (!best || Math.abs(diff) > Math.abs(best.diff)) {
+          best = { name: h.name, diff: diff, on: avg(on), off: avg(off) };
+        }
+      }
+    });
+    if (best && Math.abs(best.diff) >= 3) {
+      out.push("בימים שסימנת “" + best.name + "” ציון השינה " +
+               (best.diff > 0 ? "גבוה" : "נמוך") + " ב-" + Math.round(Math.abs(best.diff)) +
+               " נקודות (" + Math.round(best.on) + " מול " + Math.round(best.off) + ").");
+    }
+
+    var ws = [];
+    for (d = 1; d <= counted; d++) {
+      v = getDay(month, d).weight;
+      if (v !== null) ws.push({ day: d, value: v });
+    }
+    if (ws.length >= 2) {
+      var delta = ws[ws.length - 1].value - ws[0].value;
+      var r = Math.round(Math.abs(delta) * 10) / 10;
+      out.push(r === 0
+        ? "המשקל יציב מאז ה-" + ws[0].day + " בחודש."
+        : "המשקל " + (delta < 0 ? "ירד" : "עלה") + " ב-" + r + ' ק"ג מאז ה-' + ws[0].day + " בחודש.");
+    }
+
+    var top = null;
+    habitStats(month, monthKeyStr, now).forEach(function (st) {
+      if (!top || st.current > top.current) top = st;
+    });
+    if (top && top.current >= 3) {
+      out.push("רצף פעיל: " + top.current + " ימים ברציפות ב“" + top.name + "”.");
+    }
+
+    return out;
+  }
+
+  function shortMonthLabel(key) {
+    var pp = parseMonthKey(key);
+    return HEB_MONTHS[pp.month - 1].slice(0, 3) + " " + String(pp.year).slice(2);
+  }
+
   /** ימים שכבר עברו ואין בהם ציון שינה */
   function missingSleepDays(month, monthKeyStr, now) {
     var counted = countedDays(monthKeyStr, now);
@@ -392,6 +461,8 @@ var HT = (function () {
     currentStreak: currentStreak,
     countedDays: countedDays,
     habitStats: habitStats,
+    insights: insights,
+    shortMonthLabel: shortMonthLabel,
     series: series,
     segments: segments,
     weightBounds: weightBounds,

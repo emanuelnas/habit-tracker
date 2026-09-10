@@ -26,7 +26,7 @@ function MenuIcon() {
         React.createElement("path", { d: "M4 7h16M4 12h16M4 17h16" })));
 }
 /** גרף אנכי: הימים יורדים, הערך נמדד לרוחב. הצד הימני = הערך הנמוך. */
-function VerticalGraph({ points, min, max, width, rowH, headH, color, label, unit, labels }) {
+function VerticalGraph({ points, min, max, width, rowH, headH, color, label, unit, labels, monthKey, today }) {
     const COLS = 10; // הרוחב מחולק לעשר משבצות שוות
     const cell = width / COLS;
     const total = points.length;
@@ -47,6 +47,8 @@ function VerticalGraph({ points, min, max, width, rowH, headH, color, label, uni
                 React.createElement("i", null, unit)),
             React.createElement("span", { className: "graph-axis", dir: "ltr", style: { paddingInline: cell / 2 + "px" } }, (labels || HT.scaleLabels(min, max, 6)).map((v, i) => React.createElement("b", { key: i }, v)))),
         React.createElement("svg", { width: width, height: height, className: "graph-svg", role: "img", "aria-label": label },
+            monthKey ? points.filter((p) => HT.isWeekend(monthKey, p.day)).map((p) => (React.createElement("rect", { key: "w" + p.day, x: "0", y: (p.day - 1) * rowH, width: width, height: rowH, className: "row-weekend" }))) : null,
+            monthKey && today > 0 ? (React.createElement("rect", { x: "0.75", y: (today - 1) * rowH + 0.75, width: width - 1.5, height: rowH - 1.5, className: "row-today" })) : null,
             cols.map((cx, i) => (React.createElement("line", { key: "c" + i, x1: cx, x2: cx, y1: "0", y2: height, className: i % 5 === 0 ? "tick major" : "tick" }))),
             points.map((p, i) => (React.createElement("line", { key: "r" + i, x1: "0", x2: width, y1: i * rowH, y2: i * rowH, className: "tick row" }))),
             segs.map((seg, i) => (React.createElement("polyline", { key: "s" + i, className: "line", stroke: color, points: seg.map((p) => `${x(p.value)},${y(p.day)}`).join(" ") }))),
@@ -58,6 +60,22 @@ function LoginScreen() {
     const [password, setPassword] = useState("");
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
+    const [note, setNote] = useState("");
+    const reset = async () => {
+        if (!email.trim()) {
+            setError("תזין קודם את המייל, ואשלח אליו קישור לאיפוס.");
+            return;
+        }
+        setError("");
+        setNote("");
+        try {
+            await firebase.auth().sendPasswordResetEmail(email.trim());
+            setNote("שלחתי קישור לאיפוס סיסמה ל" + email.trim() + ". בדוק גם בספאם.");
+        }
+        catch (e) {
+            setError(e.code === "auth/invalid-email" ? "כתובת המייל לא תקינה." : "שליחת האיפוס נכשלה.");
+        }
+    };
     const submit = async () => {
         if (!email || !password) {
             setError("צריך מייל וסיסמה.");
@@ -92,7 +110,9 @@ function LoginScreen() {
                 React.createElement("span", null, "\u05E1\u05D9\u05E1\u05DE\u05D4"),
                 React.createElement("input", { type: "password", dir: "ltr", autoComplete: "current-password", value: password, onChange: (e) => setPassword(e.target.value), onKeyDown: (e) => e.key === "Enter" && submit() })),
             error ? React.createElement("p", { className: "login-error" }, error) : null,
+            note ? React.createElement("p", { className: "login-note" }, note) : null,
             React.createElement("button", { className: "btn primary", onClick: submit, disabled: busy }, busy ? "מתחבר…" : "כניסה"),
+            React.createElement("button", { className: "linky", onClick: reset }, "\u05E9\u05DB\u05D7\u05EA\u05D9 \u05E1\u05D9\u05E1\u05DE\u05D4"),
             React.createElement("p", { className: "credit", dir: "ltr" },
                 "v",
                 HT.VERSION,
@@ -117,11 +137,14 @@ function TopBar({ onMenu }) {
         React.createElement("div", { className: "topbar-actions" },
             React.createElement("button", { onClick: onMenu, "aria-label": "\u05E4\u05EA\u05D7 \u05EA\u05E4\u05E8\u05D9\u05D8" },
                 React.createElement(MenuIcon, null))),
-        React.createElement("h1", { className: "brand" }, "\u05D4\u05D0\u05D1\u05D9\u05D8 \u05D8\u05E8\u05D0\u05E7\u05E8")));
+        React.createElement("h1", { className: "brand", dir: "ltr" },
+            React.createElement("span", { className: "brand-log" }, "Log"),
+            React.createElement("span", { className: "brand-rest" }, "- habit tracker"))));
 }
-function AddButton({ onClick }) {
-    return (React.createElement("button", { className: "add-btn", onClick: onClick, "aria-label": "\u05D4\u05D6\u05E0\u05D4 \u05DE\u05D4\u05D9\u05E8\u05D4 \u05DC\u05D9\u05D5\u05DD" },
-        React.createElement(PlusIcon, null)));
+function AddButton({ onClick, alert, title }) {
+    return (React.createElement("button", { className: "add-btn" + (alert ? " has-alert" : ""), onClick: onClick, title: title, "aria-label": title || "הזנה מהירה ליום" },
+        React.createElement(PlusIcon, null),
+        alert ? React.createElement("span", { className: "badge", "aria-hidden": "true" }) : null));
 }
 function SummaryBrowser({ month, monthKey, now, uid }) {
     const [selected, setSelected] = useState(monthKey);
@@ -155,13 +178,94 @@ function SummaryBrowser({ month, monthKey, now, uid }) {
                 ? React.createElement(Summary, { month: data, monthKey: selected, now: now, bare: true })
                 : React.createElement("p", { className: "hint" }, "\u05D0\u05D9\u05DF \u05E0\u05EA\u05D5\u05E0\u05D9\u05DD \u05DC\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D6\u05D4.")));
 }
-function Drawer({ open, onClose, month, monthKey, onChange, inherited, theme, setTheme, now, uid }) {
+function YearGrid({ uid, monthKey, month, now }) {
+    const [rows, setRows] = useState(null);
+    const habits = month.habits;
+    const months = HT.monthRange(HT.FIRST_MONTH, monthKey > HT.currentMonthKey(now) ? monthKey : HT.currentMonthKey(now));
+    useEffect(() => {
+        let cancelled = false;
+        Promise.all(months.map((k) => k === monthKey
+            ? Promise.resolve({ key: k, data: month })
+            : monthRef(uid, k).get()
+                .then((snap) => ({ key: k, data: snap.exists ? HT.normalizeMonth(snap.data()) : null }))
+                .catch(() => ({ key: k, data: null })))).then((all) => {
+            if (cancelled)
+                return;
+            setRows(all.map((r) => ({
+                key: r.key,
+                stats: r.data ? HT.habitStats(r.data, r.key, now) : null
+            })));
+        });
+        return () => { cancelled = true; };
+    }, [uid, monthKey, month]);
+    if (!rows)
+        return React.createElement("p", { className: "hint" }, "\u05D8\u05D5\u05E2\u05DF\u2026");
+    return (React.createElement("div", { className: "year" },
+        React.createElement("div", { className: "year-row year-head" },
+            React.createElement("span", { className: "year-label" }),
+            habits.map((h) => (React.createElement("span", { className: "year-cell head", key: h.id, title: h.name }, h.name.slice(0, 2))))),
+        rows.slice().reverse().map((r) => (React.createElement("div", { className: "year-row", key: r.key },
+            React.createElement("span", { className: "year-label" }, HT.shortMonthLabel(r.key)),
+            habits.map((h) => {
+                const st = r.stats ? r.stats.filter((x) => x.id === h.id)[0] : null;
+                return (React.createElement("span", { className: "year-cell", key: h.id, title: st ? h.name + ": " + st.percent + "%" : "אין נתונים" }, st ? React.createElement("i", { style: { opacity: 0.12 + 0.88 * (st.percent / 100) } }) : null));
+            })))),
+        React.createElement("p", { className: "hint" }, "\u05DB\u05DB\u05DC \u05E9\u05D4\u05DE\u05E9\u05D1\u05E6\u05EA \u05DB\u05D4\u05D4 \u05D9\u05D5\u05EA\u05E8, \u05DB\u05DA \u05D4\u05D0\u05D7\u05D5\u05D6 \u05D1\u05D0\u05D5\u05EA\u05D5 \u05D7\u05D5\u05D3\u05E9 \u05D2\u05D1\u05D5\u05D4 \u05D9\u05D5\u05EA\u05E8.")));
+}
+function MomentSearch({ uid, monthKey, month, now, onGo }) {
+    const [query, setQuery] = useState("");
+    const [all, setAll] = useState(null);
+    const months = HT.monthRange(HT.FIRST_MONTH, monthKey > HT.currentMonthKey(now) ? monthKey : HT.currentMonthKey(now));
+    useEffect(() => {
+        let cancelled = false;
+        Promise.all(months.map((k) => k === monthKey
+            ? Promise.resolve({ key: k, data: month })
+            : monthRef(uid, k).get()
+                .then((snap) => ({ key: k, data: snap.exists ? HT.normalizeMonth(snap.data()) : null }))
+                .catch(() => ({ key: k, data: null })))).then((res) => { if (!cancelled)
+            setAll(res); });
+        return () => { cancelled = true; };
+    }, [uid, monthKey, month]);
+    const q = query.trim();
+    let results = [];
+    if (all && q.length >= 2) {
+        all.forEach((r) => {
+            if (!r.data)
+                return;
+            Object.keys(r.data.days).forEach((dayKey) => {
+                const text = r.data.days[dayKey].moment;
+                if (text && text.indexOf(q) !== -1) {
+                    results.push({ key: r.key, day: parseInt(dayKey, 10), text: text });
+                }
+            });
+        });
+        results.sort((x, y) => (x.key === y.key ? y.day - x.day : (x.key < y.key ? 1 : -1)));
+    }
+    return (React.createElement("div", { className: "search" },
+        React.createElement("input", { className: "search-input", value: query, placeholder: "\u05DE\u05D9\u05DC\u05D4 \u05DE\u05EA\u05D5\u05DA \u05E8\u05D2\u05E2 \u05D6\u05DB\u05D5\u05E8\u2026", onChange: (e) => setQuery(e.target.value), "aria-label": "\u05D7\u05D9\u05E4\u05D5\u05E9 \u05D1\u05E8\u05D2\u05E2\u05D9\u05DD" }),
+        !all ? React.createElement("p", { className: "hint" }, "\u05D8\u05D5\u05E2\u05DF\u2026") : null,
+        all && q.length >= 2 ? (results.length ? (React.createElement(React.Fragment, null,
+            React.createElement("p", { className: "hint" },
+                results.length,
+                " \u05EA\u05D5\u05E6\u05D0\u05D5\u05EA"),
+            React.createElement("ul", { className: "results" }, results.slice(0, 60).map((r, i) => (React.createElement("li", { key: i },
+                React.createElement("button", { onClick: () => onGo(r.key, r.day) },
+                    React.createElement("b", null,
+                        r.day,
+                        " \u05D1",
+                        HT.monthLabel(r.key)),
+                    React.createElement("span", null, r.text)))))))) : React.createElement("p", { className: "hint" }, "\u05DC\u05D0 \u05E0\u05DE\u05E6\u05D0 \u05DB\u05DC\u05D5\u05DD.")) : null,
+        all && q.length > 0 && q.length < 2 ? React.createElement("p", { className: "hint" }, "\u05E9\u05EA\u05D9 \u05D0\u05D5\u05EA\u05D9\u05D5\u05EA \u05DC\u05E4\u05D7\u05D5\u05EA.") : null));
+}
+function Drawer({ open, onClose, month, monthKey, onChange, inherited, theme, setTheme, now, uid, onGo }) {
     if (!open)
         return null;
     return (React.createElement("div", { className: "drawer-wrap", onClick: onClose },
         React.createElement("aside", { className: "drawer", onClick: (e) => e.stopPropagation() },
             React.createElement("div", { className: "drawer-head" },
-                React.createElement("h2", { className: "brand sm" }, "\u05D4\u05D0\u05D1\u05D9\u05D8 \u05D8\u05E8\u05D0\u05E7\u05E8"),
+                React.createElement("h2", { className: "brand sm", dir: "ltr" },
+                    React.createElement("span", { className: "brand-log" }, "Log"),
+                    React.createElement("span", { className: "brand-rest" }, "- habit tracker")),
                 React.createElement("button", { className: "ghost", onClick: onClose, "aria-label": "\u05E1\u05D2\u05D5\u05E8" }, "\u2715")),
             React.createElement(Section, { title: "\u05EA\u05E6\u05D5\u05D2\u05D4" },
                 React.createElement("div", { className: "toggle" },
@@ -171,6 +275,10 @@ function Drawer({ open, onClose, month, monthKey, onChange, inherited, theme, se
                 React.createElement(HabitsEditor, { month: month, monthKey: monthKey, onChange: onChange, inherited: inherited })),
             React.createElement(Section, { title: "\u05DE\u05D1\u05D8 \u05E2\u05DC" },
                 React.createElement(SummaryBrowser, { month: month, monthKey: monthKey, now: now, uid: uid })),
+            React.createElement(Section, { title: "\u05D7\u05D9\u05E4\u05D5\u05E9 \u05D1\u05E8\u05D2\u05E2\u05D9\u05DD" },
+                React.createElement(MomentSearch, { uid: uid, monthKey: monthKey, month: month, now: now, onGo: onGo })),
+            React.createElement(Section, { title: "\u05DE\u05D1\u05D8 \u05E9\u05E0\u05EA\u05D9" },
+                React.createElement(YearGrid, { uid: uid, monthKey: monthKey, month: month, now: now })),
             React.createElement(Section, { title: "\u05DC\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0" },
                 React.createElement(NextMonthNote, { month: month, onChange: onChange, bare: true })),
             React.createElement(Section, { title: "\u05D7\u05E9\u05D1\u05D5\u05DF" },
@@ -238,6 +346,12 @@ function Ring({ percent, size, stroke, color, children }) {
         React.createElement("circle", { cx: size / 2, cy: size / 2, r: r, className: "ring-track", strokeWidth: stroke }),
         React.createElement("circle", { cx: size / 2, cy: size / 2, r: r, className: "ring-fill", strokeWidth: stroke, stroke: color, strokeDasharray: `${(c * percent) / 100} ${c}`, transform: `rotate(-90 ${size / 2} ${size / 2})` }),
         React.createElement("text", { x: "50%", y: "50%", className: "ring-text" }, children)));
+}
+function Insights({ month, monthKey, now }) {
+    const lines = HT.insights(month, monthKey, now);
+    if (!lines.length)
+        return null;
+    return (React.createElement("ul", { className: "insights" }, lines.map((l, i) => React.createElement("li", { key: i }, l))));
 }
 function Summary({ month, monthKey, now, bare }) {
     const stats = HT.habitStats(month, monthKey, now);
@@ -368,11 +482,11 @@ function Spread(props) {
             React.createElement(NextMonthNote, { month: month, onChange: onChange })),
         React.createElement("div", { className: "gutter", "aria-hidden": "true" }),
         React.createElement("section", { className: "page page-left" },
-            React.createElement(AddButton, { onClick: () => props.openDay(today > 0 ? today : 1) }),
+            React.createElement(AddButton, { onClick: () => props.openDay(today > 0 ? today : 1), alert: props.missing > 0, title: props.missing > 0 ? props.missing + " ימים ללא ציון שינה" : "הזנה מהירה ליום" }),
             React.createElement("div", { className: "left-inner" },
                 React.createElement("div", { className: "graphs" },
-                    React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 132, rowH: ROW, headH: HEAD, color: "var(--pen)", label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF" }),
-                    React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 104, rowH: ROW, headH: HEAD, color: "var(--pen-green)", label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max) })),
+                    React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 132, rowH: ROW, headH: HEAD, color: "var(--pen)", label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF", monthKey: monthKey, today: today }),
+                    React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 104, rowH: ROW, headH: HEAD, color: "var(--pen-green)", label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max), monthKey: monthKey, today: today })),
                 React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle })),
             React.createElement(Summary, { month: month, monthKey: monthKey, now: now }))));
 }
@@ -388,7 +502,7 @@ function Phone(props) {
         React.createElement("nav", { className: "segments" }, [["grid", "החודש"], ["moments", "רגעים"], ["graphs", "גרפים"]].map(([id, label]) => (React.createElement("button", { key: id, className: tab === id ? "on" : "", onClick: () => setTab(id) }, label)))),
         React.createElement("div", { className: "phone-month" },
             React.createElement(MonthNav, { monthKey: monthKey, onShift: props.onShift, status: props.status }),
-            React.createElement(AddButton, { onClick: () => openDay(today > 0 ? today : 1) })),
+            React.createElement(AddButton, { onClick: () => openDay(today > 0 ? today : 1), alert: missing.length > 0, title: missing.length > 0 ? missing.length + " ימים ללא ציון שינה" : "הזנה מהירה ליום" })),
         tab === "grid" ? (React.createElement("div", { className: "pane" },
             React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle, fluid: true, dayCol: true, onOpenDay: openDay }))) : null,
         tab === "moments" ? (React.createElement("div", { className: "pane" },
@@ -401,8 +515,8 @@ function Phone(props) {
             React.createElement("div", { className: "graph-row" },
                 React.createElement("div", { className: "rownums", style: { paddingTop: "76px" } }, Array.from({ length: HT.daysInMonthKey(monthKey) }, (_, i) => i + 1).map((d) => (React.createElement("button", { key: d, className: "daynum sm" + (d === today ? " is-today" : ""), style: { height: "30px" }, onClick: () => openDay(d) },
                     React.createElement("b", null, d))))),
-                React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 128, rowH: 30, headH: 76, color: "var(--pen)", label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF" }),
-                React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 100, rowH: 30, headH: 76, color: "var(--pen-green)", label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max) })),
+                React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 128, rowH: 30, headH: 76, color: "var(--pen)", label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF", monthKey: monthKey, today: today }),
+                React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 100, rowH: 30, headH: 76, color: "var(--pen-green)", label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max), monthKey: monthKey, today: today })),
             React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle }))) : null));
 }
 /* ---------- האפליקציה ---------- */
@@ -544,8 +658,9 @@ function App() {
         return React.createElement("div", { className: "boot" }, "\u05E8\u05D2\u05E2\u2026");
     if (user === null)
         return React.createElement(LoginScreen, null);
+    const missingCount = HT.missingSleepDays(month, monthKey, now).length;
     const shared = {
-        month, monthKey, today, now, status, inherited,
+        month, monthKey, today, now, status, inherited, missing: missingCount,
         onToggle, onMoment, onNumber, onPatch, onShift, onChange: update,
         openDay: setSheetDay
     };
@@ -561,7 +676,7 @@ function App() {
                     React.createElement(Spread, Object.assign({}, shared)))
                 : React.createElement(Phone, Object.assign({}, shared, { tab: tab, setTab: setTab })),
         month ? (React.createElement(React.Fragment, null,
-            React.createElement(Drawer, { open: menu, onClose: () => setMenu(false), month: month, monthKey: monthKey, onChange: update, inherited: inherited, theme: theme, setTheme: setTheme, now: now, uid: user.uid }),
+            React.createElement(Drawer, { open: menu, onClose: () => setMenu(false), month: month, monthKey: monthKey, onChange: update, inherited: inherited, theme: theme, setTheme: setTheme, now: now, uid: user.uid, onGo: (key, day) => { setMonthKey(key); setSheetDay(day); setMenu(false); } }),
             React.createElement(DaySheet, { month: month, monthKey: monthKey, day: sheetDay, onClose: () => setSheetDay(null), onPatch: onPatch, onToggle: onToggle, onStep: (delta) => setSheetDay(function (cur) {
                     const total = HT.daysInMonthKey(monthKey);
                     return Math.min(total, Math.max(1, cur + delta));
