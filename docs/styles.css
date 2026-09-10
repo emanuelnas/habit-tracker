@@ -469,3 +469,23 @@ button { cursor: pointer; }
   background: var(--card); color: var(--ink); padding: 9px 11px;
 }
 .browser .summary.bare { margin-top: 4px; }
+
+/* דיאלוג אישור */
+.confirm-wrap {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(12, 17, 22, .5);
+  display: grid; place-items: center; padding: 24px;
+}
+.confirm {
+  width: min(340px, 100%);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 18px 44px rgba(12, 17, 22, .3);
+}
+.confirm h3 { margin: 0 0 8px; font-size: 17px; font-weight: 500; }
+.confirm p { margin: 0 0 18px; font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); }
+.confirm-actions { display: flex; gap: 8px; }
+.confirm-actions .btn { flex: 1; justify-content: center; width: auto; }
+.btn.primary.danger { background: var(--pen-red); border-color: var(--pen-red); color: #fff; }

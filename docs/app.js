@@ -268,9 +268,22 @@ function Summary({ month, monthKey, now, bare }) {
                     " \u00B7 \u05E8\u05E6\u05E3 ",
                     s.best))))))));
 }
+/* ---------- דיאלוג אישור ---------- */
+function ConfirmDialog({ open, title, body, confirmLabel, danger, onConfirm, onCancel }) {
+    if (!open)
+        return null;
+    return (React.createElement("div", { className: "confirm-wrap", onClick: onCancel },
+        React.createElement("div", { className: "confirm", onClick: (e) => e.stopPropagation(), role: "alertdialog", "aria-modal": "true" },
+            React.createElement("h3", null, title),
+            body ? React.createElement("p", null, body) : null,
+            React.createElement("div", { className: "confirm-actions" },
+                React.createElement("button", { className: "btn", onClick: onCancel }, "\u05D1\u05D9\u05D8\u05D5\u05DC"),
+                React.createElement("button", { className: "btn primary" + (danger ? " danger" : ""), onClick: onConfirm }, confirmLabel || "אישור")))));
+}
 /* ---------- עורך הנושאים ---------- */
 function HabitsEditor({ month, onChange, monthKey, inherited }) {
     const [draft, setDraft] = useState("");
+    const [pending, setPending] = useState(null);
     return (React.createElement("div", { className: "editor" },
         React.createElement("h3", null,
             "\u05E0\u05D5\u05E9\u05D0\u05D9 ",
@@ -284,11 +297,7 @@ function HabitsEditor({ month, onChange, monthKey, inherited }) {
             React.createElement("input", { value: h.name, onChange: (e) => onChange(HT.renameHabit(month, h.id, e.target.value)), "aria-label": "\u05E9\u05DD \u05D4\u05E0\u05D5\u05E9\u05D0" }),
             React.createElement("button", { className: "ghost sm", onClick: () => onChange(HT.moveHabit(month, h.id, -1)), disabled: i === 0, "aria-label": "\u05D4\u05D6\u05D6 \u05D9\u05DE\u05D9\u05E0\u05D4" }, "\u2191"),
             React.createElement("button", { className: "ghost sm", onClick: () => onChange(HT.moveHabit(month, h.id, 1)), disabled: i === month.habits.length - 1, "aria-label": "\u05D4\u05D6\u05D6 \u05E9\u05DE\u05D0\u05DC\u05D4" }, "\u2193"),
-            React.createElement("button", { className: "ghost sm danger", "aria-label": "מחק את " + h.name, onClick: () => {
-                    if (confirm("למחוק את “" + h.name + "” מהחודש הזה? כל האיקסים שלו בחודש הזה יימחקו.")) {
-                        onChange(HT.removeHabit(month, h.id));
-                    }
-                } }, "\u2715"))))),
+            React.createElement("button", { className: "ghost sm danger", "aria-label": "מחק את " + h.name, onClick: () => setPending(h) }, "\u2715"))))),
         React.createElement("div", { className: "editor-add" },
             React.createElement("input", { value: draft, placeholder: "\u05E0\u05D5\u05E9\u05D0 \u05D7\u05D3\u05E9", onChange: (e) => setDraft(e.target.value), onKeyDown: (e) => {
                     if (e.key === "Enter" && draft.trim()) {
@@ -296,7 +305,8 @@ function HabitsEditor({ month, onChange, monthKey, inherited }) {
                         setDraft("");
                     }
                 } }),
-            React.createElement("button", { className: "btn", disabled: !draft.trim(), onClick: () => { onChange(HT.addHabit(month, draft.trim())); setDraft(""); } }, "\u05D4\u05D5\u05E1\u05E3"))));
+            React.createElement("button", { className: "btn", disabled: !draft.trim(), onClick: () => { onChange(HT.addHabit(month, draft.trim())); setDraft(""); } }, "\u05D4\u05D5\u05E1\u05E3")),
+        React.createElement(ConfirmDialog, { open: !!pending, title: pending ? "למחוק את “" + pending.name + "”?" : "", body: "הנושא יימחק מ" + HT.monthLabel(monthKey) + " בלבד, יחד עם כל האיקסים שלו בחודש הזה. חודשים קודמים לא ייפגעו.", confirmLabel: "\u05DE\u05D7\u05E7", danger: true, onCancel: () => setPending(null), onConfirm: () => { onChange(HT.removeHabit(month, pending.id)); setPending(null); } })));
 }
 function NextMonthNote({ month, onChange, bare }) {
     return (React.createElement("div", { className: "nextmonth" + (bare ? " bare" : "") },
