@@ -272,12 +272,12 @@ button { cursor: pointer; }
   border-bottom: 1.5px solid var(--ink); padding-bottom: 4px;
 }
 .graph-title { font-size: 13px; }
-.graph-scale {
+.graph-title i { font-style: normal; font-size: 11px; color: var(--ink-soft); opacity: .8; }
+.graph-axis {
   display: flex; justify-content: space-between; align-items: baseline;
-  font-size: 10px; color: var(--ink-soft); margin-top: 2px;
+  font-size: 10px; color: var(--ink-soft); margin-top: 3px;
 }
-.graph-scale b { font-weight: 500; }
-.graph-scale i { font-style: normal; opacity: .65; }
+.graph-axis b { font-weight: 500; }
 
 .graph-svg { display: block; background: var(--card); }
 .tick { stroke: var(--rule); stroke-width: 1; }

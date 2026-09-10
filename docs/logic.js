@@ -23,7 +23,7 @@ var HT = (function () {
 
   var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
 
-  var VERSION = "1.5.0";
+  var VERSION = "1.6.0";
   var CREDIT = "Emanuel Nassimiha 2026";
 
   /* ---------- תאריכים ---------- */
@@ -305,6 +305,18 @@ var HT = (function () {
     return { min: lo, max: hi, empty: false };
   }
 
+  /** תוויות לסרגל הגרף, מהערך הגבוה לנמוך (סדר התצוגה משמאל לימין) */
+  function scaleLabels(min, max, count) {
+    var n = Math.max(2, count || 5);
+    var step = (max - min) / (n - 1);
+    var out = [];
+    for (var i = 0; i < n; i++) {
+      var v = max - step * i;
+      out.push(Math.abs(step) >= 5 ? Math.round(v) : Math.round(v * 10) / 10);
+    }
+    return out;
+  }
+
   /** ימים שכבר עברו ואין בהם ציון שינה */
   function missingSleepDays(month, monthKeyStr, now) {
     var counted = countedDays(monthKeyStr, now);
@@ -361,6 +373,7 @@ var HT = (function () {
     series: series,
     segments: segments,
     weightBounds: weightBounds,
+    scaleLabels: scaleLabels,
     missingSleepDays: missingSleepDays,
     dayOfWeekLetter: dayOfWeekLetter,
     isWeekend: isWeekend
