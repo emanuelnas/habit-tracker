@@ -23,7 +23,7 @@ var HT = (function () {
 
   var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
 
-  var VERSION = "1.7.0";
+  var VERSION = "1.8.0";
   var CREDIT = "Emanuel Nassimiha 2026";
 
   /* ---------- תאריכים ---------- */
@@ -304,14 +304,14 @@ var HT = (function () {
     return { min: min, max: max, empty: false };
   }
 
-  /** תוויות המשקל: מרווחים שווים שנופלים על מספרים עגולים */
+  /** תוויות המשקל: קילו שלם כשאפשר, ואחרת הקפיצה הקטנה ביותר שעדיין נקראת */
   function weightLabels(min, max) {
     var range = max - min;
-    var steps = [2.5, 5, 10, 25, 50, 100];
+    var steps = [1, 2, 5, 10, 25, 50];
     var step = steps[steps.length - 1];
     for (var i = 0; i < steps.length; i++) {
       var count = range / steps[i] + 1;
-      if (Math.abs(count - Math.round(count)) < 1e-9 && count <= 5) { step = steps[i]; break; }
+      if (Math.abs(count - Math.round(count)) < 1e-9 && count <= 6) { step = steps[i]; break; }
     }
     var out = [];
     for (var v = max; v >= min - 1e-9; v -= step) out.push(Math.round(v * 10) / 10);

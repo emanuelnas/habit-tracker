@@ -24,7 +24,8 @@ function MenuIcon() {
 function VerticalGraph({ points, min, max, width, rowH, headH, color, ticks, label, unit, labels }) {
     const total = points.length;
     const height = total * rowH;
-    const x = (v) => width - ((v - min) / (max - min)) * width;
+    const PAD = 4;
+    const x = (v) => (width - PAD) - ((v - min) / (max - min)) * (width - PAD * 2);
     const y = (day) => (day - 0.5) * rowH;
     const segs = HT.segments(points);
     const tickLines = [];
@@ -37,7 +38,7 @@ function VerticalGraph({ points, min, max, width, rowH, headH, color, ticks, lab
                 label,
                 " ",
                 React.createElement("i", null, unit)),
-            React.createElement("span", { className: "graph-axis", dir: "ltr" }, (labels || HT.scaleLabels(min, max, 5)).map((v, i) => React.createElement("b", { key: i }, v)))),
+            React.createElement("span", { className: "graph-axis", dir: "ltr" }, (labels || HT.scaleLabels(min, max, 6)).map((v, i) => React.createElement("b", { key: i }, v)))),
         React.createElement("svg", { width: width, height: height, className: "graph-svg", role: "img", "aria-label": label },
             tickLines.map((t, i) => (React.createElement("line", { key: "t" + i, x1: x(t), x2: x(t), y1: "0", y2: height, className: i % 5 === 0 ? "tick major" : "tick" }))),
             points.map((p, i) => (React.createElement("line", { key: "r" + i, x1: "0", x2: width, y1: i * rowH, y2: i * rowH, className: "tick row" }))),
@@ -318,7 +319,7 @@ function Spread(props) {
             React.createElement("div", { className: "left-inner" },
                 React.createElement("div", { className: "graphs" },
                     React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 132, rowH: ROW, headH: HEAD, color: "var(--pen)", ticks: 10, label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF" }),
-                    React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 86, rowH: ROW, headH: HEAD, color: "var(--pen-green)", ticks: (wb.max - wb.min) / 10, label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max) })),
+                    React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 104, rowH: ROW, headH: HEAD, color: "var(--pen-green)", ticks: (wb.max - wb.min) / 10, label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max) })),
                 React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle })),
             React.createElement(Summary, { month: month, monthKey: monthKey, now: now }))));
 }
