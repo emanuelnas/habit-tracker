@@ -126,11 +126,15 @@ button { cursor: pointer; }
   min-height: 56px;
 }
 .topbar .brand { font-size: 27px; color: var(--band-text); }
-.menu-btn {
-  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+.topbar-actions {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  display: flex; align-items: center; gap: 2px;
+}
+.topbar-actions button {
   background: none; border: none; color: var(--band-text);
   padding: 8px; border-radius: var(--radius); display: flex;
 }
+.topbar-actions button:active { background: rgba(255, 255, 255, .14); }
 
 /* ---------- לשוניות עליונות ---------- */
 
@@ -385,7 +389,8 @@ button { cursor: pointer; }
   padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
 }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.sheet-head h3 { margin: 0; font-size: 18px; font-weight: 500; }
+.sheet-head h3 { margin: 0; font-size: 17px; font-weight: 500; }
+.sheet-nav { display: flex; align-items: center; gap: 2px; }
 .two { display: flex; gap: 12px; }
 .two .field { flex: 1; }
 .sheet-habits { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }

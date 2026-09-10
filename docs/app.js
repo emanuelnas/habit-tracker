@@ -34,7 +34,7 @@ function VerticalGraph({ points, min, max, width, rowH, headH, color, ticks, lab
     return (React.createElement("div", { className: "graph", style: { width: width + "px" } },
         React.createElement("div", { className: "graph-head", style: { height: headH + "px" } },
             React.createElement("span", { className: "graph-title" }, label),
-            React.createElement("span", { className: "graph-scale" },
+            React.createElement("span", { className: "graph-scale", dir: "ltr" },
                 React.createElement("b", null, Math.round(max * 10) / 10),
                 React.createElement("i", null, unit),
                 React.createElement("b", null, Math.round(min * 10) / 10))),
@@ -100,10 +100,17 @@ function Section({ title, children, defaultOpen }) {
             React.createElement("i", { className: "chev", "aria-hidden": "true" }, "\u2304")),
         open ? React.createElement("div", { className: "section-body" }, children) : null));
 }
-function TopBar({ onMenu }) {
+function PlusIcon() {
+    return (React.createElement("svg", { viewBox: "0 0 24 24", className: "ico", "aria-hidden": "true" },
+        React.createElement("path", { d: "M12 5v14M5 12h14" })));
+}
+function TopBar({ onMenu, onAdd }) {
     return (React.createElement("header", { className: "topbar" },
-        React.createElement("button", { className: "menu-btn", onClick: onMenu, "aria-label": "\u05E4\u05EA\u05D7 \u05EA\u05E4\u05E8\u05D9\u05D8" },
-            React.createElement(MenuIcon, null)),
+        React.createElement("div", { className: "topbar-actions" },
+            React.createElement("button", { onClick: onMenu, "aria-label": "\u05E4\u05EA\u05D7 \u05EA\u05E4\u05E8\u05D9\u05D8" },
+                React.createElement(MenuIcon, null)),
+            React.createElement("button", { onClick: onAdd, "aria-label": "\u05D4\u05D6\u05E0\u05D4 \u05DE\u05D4\u05D9\u05E8\u05D4 \u05DC\u05D9\u05D5\u05DD" },
+                React.createElement(PlusIcon, null))),
         React.createElement("h1", { className: "brand" }, "\u05D4\u05D0\u05D1\u05D9\u05D8 \u05D8\u05E8\u05D0\u05E7\u05E8")));
 }
 function Drawer({ open, onClose, month, monthKey, onChange, inherited, theme, setTheme, now }) {
@@ -254,19 +261,23 @@ function NextMonthNote({ month, onChange, bare }) {
             React.createElement("input", { value: month.nextMonth, maxLength: 120, placeholder: "\u05E0\u05D5\u05E9\u05D0\u05D9\u05DD \u05E9\u05D1\u05D0 \u05DC\u05D9 \u05DC\u05D4\u05D5\u05E1\u05D9\u05E3\u2026", onChange: (e) => onChange(Object.assign(Object.assign({}, month), { nextMonth: e.target.value })) }))));
 }
 /* ---------- חלון יום בודד ---------- */
-function DaySheet({ month, monthKey, day, onClose, onPatch, onToggle }) {
+function DaySheet({ month, monthKey, day, onClose, onPatch, onToggle, onStep }) {
     if (!day)
         return null;
     const d = HT.getDay(month, day);
+    const total = HT.daysInMonthKey(monthKey);
     return (React.createElement("div", { className: "sheet-wrap", onClick: onClose },
         React.createElement("div", { className: "sheet", onClick: (e) => e.stopPropagation() },
             React.createElement("div", { className: "sheet-head" },
-                React.createElement("h3", null,
-                    day,
-                    " \u05D1",
-                    HT.monthLabel(monthKey).split(" ")[0],
-                    ", \u05D9\u05D5\u05DD ",
-                    HT.dayOfWeekLetter(monthKey, day)),
+                React.createElement("div", { className: "sheet-nav" },
+                    React.createElement("button", { className: "ghost", onClick: () => onStep(-1), disabled: day <= 1, "aria-label": "\u05D9\u05D5\u05DD \u05E7\u05D5\u05D3\u05DD" }, "\u203A"),
+                    React.createElement("h3", null,
+                        day,
+                        " \u05D1",
+                        HT.monthLabel(monthKey).split(" ")[0],
+                        ", \u05D9\u05D5\u05DD ",
+                        HT.dayOfWeekLetter(monthKey, day)),
+                    React.createElement("button", { className: "ghost", onClick: () => onStep(1), disabled: day >= total, "aria-label": "\u05D9\u05D5\u05DD \u05D4\u05D1\u05D0" }, "\u2039")),
                 React.createElement("button", { className: "ghost", onClick: onClose, "aria-label": "\u05E1\u05D2\u05D5\u05E8" }, "\u2715")),
             React.createElement("label", { className: "field" },
                 React.createElement("span", null, "\u05E8\u05D2\u05E2 \u05D6\u05DB\u05D5\u05E8"),
@@ -480,7 +491,7 @@ function App() {
         openDay: setSheetDay
     };
     return (React.createElement("div", { className: "app" },
-        React.createElement(TopBar, { onMenu: () => setMenu(true) }),
+        React.createElement(TopBar, { onMenu: () => setMenu(true), onAdd: () => setSheetDay(today > 0 ? today : 1) }),
         !month
             ? React.createElement("div", { className: "boot" },
                 "\u05E4\u05D5\u05EA\u05D7 \u05D0\u05EA ",
@@ -492,6 +503,9 @@ function App() {
                 : React.createElement(Phone, Object.assign({}, shared, { tab: tab, setTab: setTab })),
         month ? (React.createElement(React.Fragment, null,
             React.createElement(Drawer, { open: menu, onClose: () => setMenu(false), month: month, monthKey: monthKey, onChange: update, inherited: inherited, theme: theme, setTheme: setTheme, now: now }),
-            React.createElement(DaySheet, { month: month, monthKey: monthKey, day: sheetDay, onClose: () => setSheetDay(null), onPatch: onPatch, onToggle: onToggle }))) : null));
+            React.createElement(DaySheet, { month: month, monthKey: monthKey, day: sheetDay, onClose: () => setSheetDay(null), onPatch: onPatch, onToggle: onToggle, onStep: (delta) => setSheetDay(function (cur) {
+                    const total = HT.daysInMonthKey(monthKey);
+                    return Math.min(total, Math.max(1, cur + delta));
+                }) }))) : null));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App, null));
