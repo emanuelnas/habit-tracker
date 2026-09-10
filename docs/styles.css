@@ -77,7 +77,12 @@ button { cursor: pointer; }
   padding: 30px 26px 26px;
   box-shadow: 0 10px 30px rgba(23, 33, 43, .07);
 }
-.login-sub { margin: 6px 0 26px; color: var(--ink-soft); font-size: 15px; }
+.logo {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400; font-size: 64px; line-height: 1;
+  margin: 6px 0 0; text-align: center; letter-spacing: .01em;
+}
+.login-sub { margin: 10px 0 28px; color: var(--ink-soft); font-size: 15px; text-align: center; }
 
 .field { display: block; margin-bottom: 16px; }
 .field > span { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; }
@@ -454,3 +459,13 @@ button { cursor: pointer; }
 }
 .add-btn:active { background: var(--tint); }
 .page-left > .add-btn { position: absolute; top: 16px; right: 22px; z-index: 2; }
+
+.chev-ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.monthnav .ghost { display: flex; align-items: center; padding: 6px; }
+
+.month-select {
+  width: 100%; margin-bottom: 14px;
+  border: 1px solid var(--rule-strong); border-radius: var(--radius);
+  background: var(--card); color: var(--ink); padding: 9px 11px;
+}
+.browser .summary.bare { margin-top: 4px; }

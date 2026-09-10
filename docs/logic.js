@@ -23,7 +23,7 @@ var HT = (function () {
 
   var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
 
-  var VERSION = "1.9.0";
+  var VERSION = "2.0.0";
   var CREDIT = "Emanuel Nassimiha 2026";
 
   /* ---------- תאריכים ---------- */
@@ -60,6 +60,14 @@ var HT = (function () {
   }
 
   function canGoBack(key) { return key > FIRST_MONTH; }
+
+  /** כל מפתחות החודשים מ-from עד to, כולל */
+  function monthRange(from, to) {
+    var out = [], cur = from;
+    var guard = 0;
+    while (cur <= to && guard < 600) { out.push(cur); cur = shiftMonth(cur, 1); guard++; }
+    return out;
+  }
 
   function todayParts(now) {
     var d = now || new Date();
@@ -366,6 +374,7 @@ var HT = (function () {
     monthLabel: monthLabel,
     shiftMonth: shiftMonth,
     canGoBack: canGoBack,
+    monthRange: monthRange,
     todayParts: todayParts,
     currentMonthKey: currentMonthKey,
     emptyMonth: emptyMonth,
