@@ -23,7 +23,7 @@ var HT = (function () {
 
   var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
 
-  var VERSION = "1.6.0";
+  var VERSION = "1.7.0";
   var CREDIT = "Emanuel Nassimiha 2026";
 
   /* ---------- תאריכים ---------- */
@@ -291,18 +291,31 @@ var HT = (function () {
     return segs;
   }
 
-  /** תחום דינמי לגרף המשקל, מעוגל לחצי ק"ג עם שוליים */
-  function weightBounds(points, padding) {
+  /** תחום גרף המשקל: תמיד עד הכפולה של 5 הקרובה כלפי חוץ (67→65, 73→75) */
+  function weightBounds(points) {
     var vals = points.filter(function (p) { return p.value !== null; })
                      .map(function (p) { return p.value; });
-    if (!vals.length) return { min: 70, max: 90, empty: true };
+    if (!vals.length) return { min: 70, max: 75, empty: true };
     var lo = Math.min.apply(null, vals);
     var hi = Math.max.apply(null, vals);
-    var pad = padding === undefined ? 1 : padding;
-    if (hi - lo < 2) { lo -= 1; hi += 1; }
-    lo = Math.floor((lo - pad) * 2) / 2;
-    hi = Math.ceil((hi + pad) * 2) / 2;
-    return { min: lo, max: hi, empty: false };
+    var min = Math.floor(lo / 5) * 5;
+    var max = Math.ceil(hi / 5) * 5;
+    if (max - min < 5) max = min + 5;
+    return { min: min, max: max, empty: false };
+  }
+
+  /** תוויות המשקל: מרווחים שווים שנופלים על מספרים עגולים */
+  function weightLabels(min, max) {
+    var range = max - min;
+    var steps = [2.5, 5, 10, 25, 50, 100];
+    var step = steps[steps.length - 1];
+    for (var i = 0; i < steps.length; i++) {
+      var count = range / steps[i] + 1;
+      if (Math.abs(count - Math.round(count)) < 1e-9 && count <= 5) { step = steps[i]; break; }
+    }
+    var out = [];
+    for (var v = max; v >= min - 1e-9; v -= step) out.push(Math.round(v * 10) / 10);
+    return out;
   }
 
   /** תוויות לסרגל הגרף, מהערך הגבוה לנמוך (סדר התצוגה משמאל לימין) */
@@ -374,6 +387,7 @@ var HT = (function () {
     segments: segments,
     weightBounds: weightBounds,
     scaleLabels: scaleLabels,
+    weightLabels: weightLabels,
     missingSleepDays: missingSleepDays,
     dayOfWeekLetter: dayOfWeekLetter,
     isWeekend: isWeekend
