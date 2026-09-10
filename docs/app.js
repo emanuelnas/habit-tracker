@@ -1,10 +1,9 @@
 "use strict";
 /* ==========================================================================
-   app.jsx — ממשק הטראקר. נבנה כמו האפליקציה לערבית:
-   React 18 מ‑CDN, בלי Babel בדפדפן (הקובץ מקומפל מראש ל‑app.js).
+   app.jsx — ממשק הטראקר. React 18 מ‑CDN, בלי Babel בדפדפן.
+   הכל בזרימה רגילה של הדף: אין sticky ואין גלילה מקוננת, כדי שזום לא יזיז כלום.
    ========================================================================== */
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
-/* ---------- עזרי Firebase ---------- */
 function monthRef(uid, key) {
     return firebase.firestore()
         .collection("users").doc(uid)
@@ -17,13 +16,11 @@ function XMark({ seed }) {
         React.createElement("path", { d: "M5 4.5 L19 19.5" }),
         React.createElement("path", { d: "M19 4.8 L4.8 19.2" })));
 }
-function PenIcon() {
+function MenuIcon() {
     return (React.createElement("svg", { viewBox: "0 0 24 24", className: "ico", "aria-hidden": "true" },
-        React.createElement("path", { d: "M4 20l4-1 10-10-3-3L5 16z" }),
-        React.createElement("path", { d: "M15 6l3 3" })));
+        React.createElement("path", { d: "M4 7h16M4 12h16M4 17h16" })));
 }
-/** גרף אנכי: הימים יורדים מלמעלה למטה, הערך נמדד לרוחב.
-    הצד הימני של הגרף = הערך הנמוך (קרוב למרכז המחברת). */
+/** גרף אנכי: הימים יורדים, הערך נמדד לרוחב. הצד הימני = הערך הנמוך. */
 function VerticalGraph({ points, min, max, width, rowH, headH, color, ticks, label, unit }) {
     const total = points.length;
     const height = total * rowH;
@@ -31,20 +28,19 @@ function VerticalGraph({ points, min, max, width, rowH, headH, color, ticks, lab
     const y = (day) => (day - 0.5) * rowH;
     const segs = HT.segments(points);
     const tickLines = [];
-    if (ticks) {
-        for (let t = min; t <= max + 0.0001; t += ticks) {
+    if (ticks > 0)
+        for (let t = min; t <= max + 0.0001; t += ticks)
             tickLines.push(t);
-        }
-    }
     return (React.createElement("div", { className: "graph", style: { width: width + "px" } },
         React.createElement("div", { className: "graph-head", style: { height: headH + "px" } },
             React.createElement("span", { className: "graph-title" }, label),
             React.createElement("span", { className: "graph-scale" },
-                React.createElement("b", null, max),
+                React.createElement("b", null, Math.round(max * 10) / 10),
                 React.createElement("i", null, unit),
-                React.createElement("b", null, min))),
+                React.createElement("b", null, Math.round(min * 10) / 10))),
         React.createElement("svg", { width: width, height: height, className: "graph-svg", role: "img", "aria-label": label },
             tickLines.map((t, i) => (React.createElement("line", { key: "t" + i, x1: x(t), x2: x(t), y1: "0", y2: height, className: i % 5 === 0 ? "tick major" : "tick" }))),
+            points.map((p, i) => (React.createElement("line", { key: "r" + i, x1: "0", x2: width, y1: i * rowH, y2: i * rowH, className: "tick row" }))),
             segs.map((seg, i) => (React.createElement("polyline", { key: "s" + i, className: "line", stroke: color, points: seg.map((p) => `${x(p.value)},${y(p.day)}`).join(" ") }))),
             points.filter((p) => p.value !== null).map((p) => (React.createElement("circle", { key: "c" + p.day, cx: x(p.value), cy: y(p.day), r: "2.6", fill: color }))))));
 }
@@ -79,7 +75,7 @@ function LoginScreen() {
     };
     return (React.createElement("div", { className: "login" },
         React.createElement("div", { className: "login-card" },
-            React.createElement("h1", { className: "login-title" }, "\u05D4\u05D0\u05D1\u05D9\u05D8 \u05D8\u05E8\u05D0\u05E7\u05E8"),
+            React.createElement("h1", { className: "brand big" }, "\u05D4\u05D0\u05D1\u05D9\u05D8 \u05D8\u05E8\u05D0\u05E7\u05E8"),
             React.createElement("p", { className: "login-sub" }, "\u05D4\u05DE\u05D7\u05D1\u05E8\u05EA, \u05D1\u05DC\u05D9 \u05D4\u05DE\u05D7\u05D1\u05E8\u05EA."),
             React.createElement("label", { className: "field" },
                 React.createElement("span", null, "\u05DE\u05D9\u05D9\u05DC"),
@@ -88,7 +84,41 @@ function LoginScreen() {
                 React.createElement("span", null, "\u05E1\u05D9\u05E1\u05DE\u05D4"),
                 React.createElement("input", { type: "password", dir: "ltr", autoComplete: "current-password", value: password, onChange: (e) => setPassword(e.target.value), onKeyDown: (e) => e.key === "Enter" && submit() })),
             error ? React.createElement("p", { className: "login-error" }, error) : null,
-            React.createElement("button", { className: "btn primary", onClick: submit, disabled: busy }, busy ? "מתחבר…" : "כניסה"))));
+            React.createElement("button", { className: "btn primary", onClick: submit, disabled: busy }, busy ? "מתחבר…" : "כניסה"),
+            React.createElement("p", { className: "credit", dir: "ltr" },
+                "v",
+                HT.VERSION,
+                " \u00B7 ",
+                HT.CREDIT))));
+}
+/* ---------- באנר עליון ותפריט ---------- */
+function TopBar({ onMenu }) {
+    return (React.createElement("header", { className: "topbar" },
+        React.createElement("button", { className: "menu-btn", onClick: onMenu, "aria-label": "\u05E4\u05EA\u05D7 \u05EA\u05E4\u05E8\u05D9\u05D8" },
+            React.createElement(MenuIcon, null)),
+        React.createElement("h1", { className: "brand" }, "\u05D4\u05D0\u05D1\u05D9\u05D8 \u05D8\u05E8\u05D0\u05E7\u05E8")));
+}
+function Drawer({ open, onClose, month, monthKey, onChange, inherited, theme, setTheme }) {
+    if (!open)
+        return null;
+    return (React.createElement("div", { className: "drawer-wrap", onClick: onClose },
+        React.createElement("aside", { className: "drawer", onClick: (e) => e.stopPropagation() },
+            React.createElement("div", { className: "drawer-head" },
+                React.createElement("h2", { className: "brand sm" }, "\u05D4\u05D0\u05D1\u05D9\u05D8 \u05D8\u05E8\u05D0\u05E7\u05E8"),
+                React.createElement("button", { className: "ghost", onClick: onClose, "aria-label": "\u05E1\u05D2\u05D5\u05E8" }, "\u2715")),
+            React.createElement("div", { className: "drawer-section" },
+                React.createElement("h3", null, "\u05EA\u05E6\u05D5\u05D2\u05D4"),
+                React.createElement("div", { className: "toggle" },
+                    React.createElement("button", { className: theme === "light" ? "on" : "", onClick: () => setTheme("light") }, "\u05D9\u05D5\u05DD"),
+                    React.createElement("button", { className: theme === "dark" ? "on" : "", onClick: () => setTheme("dark") }, "\u05DC\u05D9\u05DC\u05D4"))),
+            React.createElement("div", { className: "drawer-section grow" },
+                React.createElement(HabitsEditor, { month: month, monthKey: monthKey, onChange: onChange, inherited: inherited })),
+            React.createElement("button", { className: "btn ghost wide", onClick: () => firebase.auth().signOut() }, "\u05D9\u05E6\u05D9\u05D0\u05D4 \u05DE\u05D4\u05D7\u05E9\u05D1\u05D5\u05DF"),
+            React.createElement("p", { className: "credit", dir: "ltr" },
+                "v",
+                HT.VERSION,
+                " \u00B7 ",
+                HT.CREDIT))));
 }
 /* ---------- ניווט חודשים ---------- */
 function MonthNav({ monthKey, onShift, status }) {
@@ -99,13 +129,14 @@ function MonthNav({ monthKey, onShift, status }) {
         React.createElement("span", { className: "status " + status }, status === "saving" ? "שומר…" : status === "error" ? "לא נשמר" : "נשמר")));
 }
 /* ---------- טבלת הנושאים ---------- */
-function HabitGrid({ month, monthKey, today, rowH, headH, onToggle, showNumbers, onNumber }) {
+function HabitGrid({ month, monthKey, today, rowH, headH, onToggle, showNumbers, onNumber, fluid, dayCol, onOpenDay }) {
     const total = HT.daysInMonthKey(monthKey);
     const days = [];
     for (let d = 1; d <= total; d++)
         days.push(d);
-    return (React.createElement("div", { className: "grid" },
+    return (React.createElement("div", { className: "grid" + (fluid ? " fluid" : "") },
         React.createElement("div", { className: "grid-head", style: { height: headH + "px" } },
+            dayCol ? React.createElement("div", { className: "corner" }) : null,
             showNumbers ? (React.createElement(React.Fragment, null,
                 React.createElement("div", { className: "numhead" }, "\u05E9\u05D9\u05E0\u05D4"),
                 React.createElement("div", { className: "numhead" }, "\u05DE\u05E9\u05E7\u05DC"))) : null,
@@ -115,6 +146,9 @@ function HabitGrid({ month, monthKey, today, rowH, headH, onToggle, showNumbers,
             const day = HT.getDay(month, d);
             return (React.createElement("div", { className: "grid-row" + (d === today ? " is-today" : "") +
                     (HT.isWeekend(monthKey, d) ? " is-weekend" : ""), key: d, style: { height: rowH + "px" } },
+                dayCol ? (React.createElement("button", { className: "daycol", onClick: () => onOpenDay && onOpenDay(d) },
+                    React.createElement("b", null, d),
+                    React.createElement("i", null, HT.dayOfWeekLetter(monthKey, d)))) : null,
                 showNumbers ? (React.createElement(React.Fragment, null,
                     React.createElement("input", { className: "numcell", inputMode: "decimal", value: day.sleep === null ? "" : day.sleep, onChange: (e) => onNumber(d, "sleep", e.target.value), "aria-label": "ציון שינה ליום " + d }),
                     React.createElement("input", { className: "numcell", inputMode: "decimal", value: day.weight === null ? "" : day.weight, onChange: (e) => onNumber(d, "weight", e.target.value), "aria-label": "משקל ליום " + d }))) : null,
@@ -140,7 +174,7 @@ function MomentsList({ month, monthKey, today, rowH, onMoment, onOpenDay }) {
     }
     return React.createElement("div", { className: "moments" }, rows);
 }
-/* ---------- סיכום חודשי ---------- */
+/* ---------- סיכום ---------- */
 function Ring({ percent, size, stroke, color, children }) {
     const r = (size - stroke) / 2;
     const c = 2 * Math.PI * r;
@@ -183,9 +217,9 @@ function HabitsEditor({ month, onChange, monthKey, inherited }) {
     const [draft, setDraft] = useState("");
     return (React.createElement("div", { className: "editor" },
         React.createElement("h3", null,
-            "\u05E0\u05D5\u05E9\u05D0\u05D9 \u05D4\u05DE\u05E2\u05E7\u05D1 \u05E9\u05DC ",
+            "\u05E0\u05D5\u05E9\u05D0\u05D9 ",
             HT.monthLabel(monthKey)),
-        React.createElement("p", { className: "hint" }, "\u05E9\u05D9\u05E0\u05D5\u05D9 \u05DB\u05D0\u05DF \u05DE\u05E9\u05E4\u05D9\u05E2 \u05E2\u05DC \u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D6\u05D4 \u05D1\u05DC\u05D1\u05D3. \u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0 \u05D9\u05D9\u05E4\u05EA\u05D7 \u05E2\u05DD \u05D0\u05D5\u05EA\u05D4 \u05E8\u05E9\u05D9\u05DE\u05D4, \u05D5\u05DE\u05E9\u05DD \u05D0\u05E4\u05E9\u05E8 \u05DC\u05E9\u05E0\u05D5\u05EA \u05E9\u05D5\u05D1."),
+        React.createElement("p", { className: "hint" }, "\u05E9\u05D9\u05E0\u05D5\u05D9 \u05DB\u05D0\u05DF \u05DE\u05E9\u05E4\u05D9\u05E2 \u05E2\u05DC \u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D6\u05D4 \u05D1\u05DC\u05D1\u05D3. \u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0 \u05D9\u05D9\u05E4\u05EA\u05D7 \u05E2\u05DD \u05D0\u05D5\u05EA\u05D4 \u05E8\u05E9\u05D9\u05DE\u05D4."),
         inherited ? React.createElement("p", { className: "hint note" },
             "\u05D1\u05E1\u05D5\u05E3 \u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05E7\u05D5\u05D3\u05DD \u05E8\u05E9\u05DE\u05EA: \u201C",
             inherited,
@@ -214,7 +248,7 @@ function NextMonthNote({ month, onChange }) {
             React.createElement("span", null, "\u05DC\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0"),
             React.createElement("input", { value: month.nextMonth, maxLength: 120, placeholder: "\u05E0\u05D5\u05E9\u05D0\u05D9\u05DD \u05E9\u05D1\u05D0 \u05DC\u05D9 \u05DC\u05D4\u05D5\u05E1\u05D9\u05E3\u2026", onChange: (e) => onChange(Object.assign(Object.assign({}, month), { nextMonth: e.target.value })) }))));
 }
-/* ---------- חלון יום בודד (נייד) ---------- */
+/* ---------- חלון יום בודד ---------- */
 function DaySheet({ month, monthKey, day, onClose, onPatch, onToggle }) {
     if (!day)
         return null;
@@ -246,9 +280,9 @@ function DaySheet({ month, monthKey, day, onClose, onPatch, onToggle }) {
                     h.name));
             })))));
 }
-/* ---------- תצוגת מחברת (אייפד / מסך רחב) ---------- */
+/* ---------- תצוגת מחברת ---------- */
 function Spread(props) {
-    const { month, monthKey, today, now, onToggle, onNumber, onMoment, onChange, openDay } = props;
+    const { month, monthKey, today, now, onToggle, onNumber, onMoment, onChange } = props;
     const ROW = 30, HEAD = 132;
     const sleepPts = HT.series(month, "sleep", monthKey);
     const weightPts = HT.series(month, "weight", monthKey);
@@ -258,78 +292,84 @@ function Spread(props) {
             React.createElement("div", { className: "page-head", style: { height: HEAD + "px" } },
                 React.createElement(MonthNav, { monthKey: monthKey, onShift: props.onShift, status: props.status }),
                 React.createElement("p", { className: "page-kicker" }, "\u05E8\u05D2\u05E2\u05D9\u05DD \u05D6\u05DB\u05D5\u05E8\u05D9\u05DD")),
-            React.createElement(MomentsList, { month: month, monthKey: monthKey, today: today, rowH: ROW, onMoment: onMoment, onOpenDay: openDay }),
+            React.createElement(MomentsList, { month: month, monthKey: monthKey, today: today, rowH: ROW, onMoment: onMoment }),
             React.createElement(NextMonthNote, { month: month, onChange: onChange })),
         React.createElement("div", { className: "gutter", "aria-hidden": "true" }),
         React.createElement("section", { className: "page page-left" },
             React.createElement("div", { className: "left-inner" },
                 React.createElement("div", { className: "graphs" },
-                    React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 132, rowH: ROW, headH: 132, color: "var(--ink-blue)", ticks: 10, label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF" }),
-                    React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 86, rowH: ROW, headH: 132, color: "var(--pen-green)", ticks: (wb.max - wb.min) / 8, label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2' })),
+                    React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 132, rowH: ROW, headH: HEAD, color: "var(--pen)", ticks: 10, label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF" }),
+                    React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 86, rowH: ROW, headH: HEAD, color: "var(--pen-green)", ticks: (wb.max - wb.min) / 8, label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2' })),
                 React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle, showNumbers: true, onNumber: onNumber })),
             React.createElement(Summary, { month: month, monthKey: monthKey, now: now }))));
 }
 /* ---------- תצוגת נייד ---------- */
 function Phone(props) {
-    const { month, monthKey, today, now, onToggle, onNumber, onMoment, onChange, tab, setTab } = props;
-    const ROW = 38, HEAD = 104;
+    const { month, monthKey, today, now, onToggle, onMoment, onChange, tab, setTab } = props;
+    const ROW = 40, HEAD = 108;
     const [sheetDay, setSheetDay] = useState(null);
     const sleepPts = HT.series(month, "sleep", monthKey);
     const weightPts = HT.series(month, "weight", monthKey);
     const wb = HT.weightBounds(weightPts);
     const missing = HT.missingSleepDays(month, monthKey, now);
     return (React.createElement("div", { className: "phone" },
-        React.createElement("header", { className: "phone-head" },
+        React.createElement("nav", { className: "segments" }, [["grid", "החודש"], ["moments", "רגעים"], ["graphs", "גרפים"]].map(([id, label]) => (React.createElement("button", { key: id, className: tab === id ? "on" : "", onClick: () => setTab(id) }, label)))),
+        React.createElement("div", { className: "phone-month" },
             React.createElement(MonthNav, { monthKey: monthKey, onShift: props.onShift, status: props.status })),
-        React.createElement("main", { className: "phone-body" },
-            tab === "grid" ? (React.createElement("div", { className: "pane" },
-                React.createElement("div", { className: "grid-scroll" },
-                    React.createElement("div", { className: "rownums", style: { paddingTop: HEAD + "px" } }, Array.from({ length: HT.daysInMonthKey(monthKey) }, (_, i) => i + 1).map((d) => (React.createElement("button", { key: d, className: "daynum sm" + (d === today ? " is-today" : ""), style: { height: ROW + "px" }, onClick: () => setSheetDay(d) },
-                        React.createElement("b", null, d),
-                        React.createElement("i", null, HT.dayOfWeekLetter(monthKey, d)))))),
-                    React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle, showNumbers: false })),
-                React.createElement(Summary, { month: month, monthKey: monthKey, now: now }))) : null,
-            tab === "moments" ? (React.createElement("div", { className: "pane" },
-                React.createElement(MomentsList, { month: month, monthKey: monthKey, today: today, rowH: 44, onMoment: onMoment, onOpenDay: setSheetDay }),
-                React.createElement(NextMonthNote, { month: month, onChange: onChange }))) : null,
-            tab === "graphs" ? (React.createElement("div", { className: "pane" },
-                missing.length ? (React.createElement("p", { className: "missing" },
-                    missing.length === 1 ? "יום אחד בלי ציון שינה: " : missing.length + " ימים בלי ציון שינה: ",
-                    missing.slice(0, 8).join(", "),
-                    missing.length > 8 ? "…" : "")) : null,
-                React.createElement("div", { className: "graph-scroll" },
-                    React.createElement("div", { className: "rownums", style: { paddingTop: "76px" } }, Array.from({ length: HT.daysInMonthKey(monthKey) }, (_, i) => i + 1).map((d) => (React.createElement("button", { key: d, className: "daynum sm" + (d === today ? " is-today" : ""), style: { height: 30 + "px" }, onClick: () => setSheetDay(d) },
-                        React.createElement("b", null, d))))),
-                    React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 132, rowH: 30, headH: 76, color: "var(--ink-blue)", ticks: 10, label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF" }),
-                    React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 104, rowH: 30, headH: 76, color: "var(--pen-green)", ticks: (wb.max - wb.min) / 8, label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2' })))) : null,
-            tab === "habits" ? (React.createElement("div", { className: "pane pad" },
-                React.createElement(HabitsEditor, { month: month, monthKey: monthKey, onChange: onChange, inherited: props.inherited }),
-                React.createElement("button", { className: "btn ghost wide", onClick: () => firebase.auth().signOut() }, "\u05D9\u05E6\u05D9\u05D0\u05D4 \u05DE\u05D4\u05D7\u05E9\u05D1\u05D5\u05DF"))) : null),
-        React.createElement("nav", { className: "tabs" }, [["grid", "החודש"], ["moments", "רגעים"], ["graphs", "גרפים"], ["habits", "נושאים"]].map(([id, label]) => (React.createElement("button", { key: id, className: tab === id ? "on" : "", onClick: () => setTab(id) }, label)))),
+        tab === "grid" ? (React.createElement("div", { className: "pane" },
+            React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle, showNumbers: false, fluid: true, dayCol: true, onOpenDay: setSheetDay }),
+            React.createElement(Summary, { month: month, monthKey: monthKey, now: now }))) : null,
+        tab === "moments" ? (React.createElement("div", { className: "pane" },
+            React.createElement(MomentsList, { month: month, monthKey: monthKey, today: today, rowH: 44, onMoment: onMoment, onOpenDay: setSheetDay }),
+            React.createElement(NextMonthNote, { month: month, onChange: onChange }))) : null,
+        tab === "graphs" ? (React.createElement("div", { className: "pane" },
+            missing.length ? (React.createElement("p", { className: "missing" },
+                missing.length === 1 ? "יום אחד בלי ציון שינה: " : missing.length + " ימים בלי ציון שינה: ",
+                missing.slice(0, 8).join(", "),
+                missing.length > 8 ? "…" : "")) : null,
+            React.createElement("div", { className: "graph-row" },
+                React.createElement("div", { className: "rownums", style: { paddingTop: "76px" } }, Array.from({ length: HT.daysInMonthKey(monthKey) }, (_, i) => i + 1).map((d) => (React.createElement("button", { key: d, className: "daynum sm" + (d === today ? " is-today" : ""), style: { height: "30px" }, onClick: () => setSheetDay(d) },
+                    React.createElement("b", null, d))))),
+                React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 128, rowH: 30, headH: 76, color: "var(--pen)", ticks: 10, label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF" }),
+                React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 100, rowH: 30, headH: 76, color: "var(--pen-green)", ticks: (wb.max - wb.min) / 8, label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2' })))) : null,
         React.createElement(DaySheet, { month: month, monthKey: monthKey, day: sheetDay, onClose: () => setSheetDay(null), onPatch: props.onPatch, onToggle: onToggle })));
 }
 /* ---------- האפליקציה ---------- */
 function App() {
-    const [user, setUser] = useState(undefined); // undefined = עוד בודקים
+    const [user, setUser] = useState(undefined);
     const [monthKey, setMonthKey] = useState(HT.currentMonthKey());
     const [month, setMonth] = useState(null);
     const [status, setStatus] = useState("saved");
     const [wide, setWide] = useState(window.innerWidth >= 900);
     const [tab, setTab] = useState("grid");
-    const [showEditor, setShowEditor] = useState(false);
+    const [menu, setMenu] = useState(false);
     const [inherited, setInherited] = useState("");
+    const [theme, setTheme] = useState(function () {
+        try {
+            return localStorage.getItem("ht-theme") || "light";
+        }
+        catch (e) {
+            return "light";
+        }
+    });
     const saveTimer = useRef(null);
     const dirty = useRef(false);
     const now = new Date();
     const t = HT.todayParts(now);
     const today = HT.monthKey(t.year, t.month) === monthKey ? t.day : -1;
     useEffect(() => {
+        document.documentElement.setAttribute("data-theme", theme);
+        try {
+            localStorage.setItem("ht-theme", theme);
+        }
+        catch (e) { }
+    }, [theme]);
+    useEffect(() => {
         const onResize = () => setWide(window.innerWidth >= 900);
         window.addEventListener("resize", onResize);
         return () => window.removeEventListener("resize", onResize);
     }, []);
     useEffect(() => firebase.auth().onAuthStateChanged((u) => setUser(u || null)), []);
-    /* טעינת חודש. אם אין מסמך — יורשים את נושאי החודש הקודם. */
     useEffect(() => {
         if (!user) {
             setMonth(null);
@@ -346,12 +386,9 @@ function App() {
                     return;
                 const prev = prevSnap.exists ? HT.normalizeMonth(prevSnap.data()) : null;
                 setInherited(prev ? prev.nextMonth : "");
-                if (snap.exists) {
-                    setMonth(HT.normalizeMonth(snap.data(), prev ? prev.habits : null));
-                }
-                else {
-                    setMonth(HT.emptyMonth(prev ? prev.habits : null));
-                }
+                setMonth(snap.exists
+                    ? HT.normalizeMonth(snap.data(), prev ? prev.habits : null)
+                    : HT.emptyMonth(prev ? prev.habits : null));
                 setStatus("saved");
             }
             catch (e) {
@@ -363,7 +400,6 @@ function App() {
         })();
         return () => { cancelled = true; };
     }, [user, monthKey]);
-    /* שמירה מושהית */
     const scheduleSave = useCallback((next) => {
         if (!user)
             return;
@@ -382,10 +418,7 @@ function App() {
             }
         }, 800);
     }, [user, monthKey]);
-    const update = useCallback((next) => {
-        setMonth(next);
-        scheduleSave(next);
-    }, [scheduleSave]);
+    const update = useCallback((next) => { setMonth(next); scheduleSave(next); }, [scheduleSave]);
     useEffect(() => {
         const warn = (e) => { if (dirty.current) {
             e.preventDefault();
@@ -407,38 +440,29 @@ function App() {
         update(HT.withDay(month, d, { [field]: val }));
     };
     const onShift = (delta) => {
-        const next = HT.shiftMonth(monthKey, delta);
         if (delta < 0 && !HT.canGoBack(monthKey))
             return;
-        setMonthKey(next);
+        setMonthKey(HT.shiftMonth(monthKey, delta));
     };
     if (user === undefined)
         return React.createElement("div", { className: "boot" }, "\u05E8\u05D2\u05E2\u2026");
     if (user === null)
         return React.createElement(LoginScreen, null);
-    if (!month)
-        return React.createElement("div", { className: "boot" },
-            "\u05E4\u05D5\u05EA\u05D7 \u05D0\u05EA ",
-            HT.monthLabel(monthKey),
-            "\u2026");
     const shared = {
         month, monthKey, today, now, status, inherited,
-        onToggle, onMoment, onNumber, onPatch, onShift,
-        onChange: update
+        onToggle, onMoment, onNumber, onPatch, onShift, onChange: update
     };
-    if (!wide)
-        return React.createElement(Phone, Object.assign({}, shared, { tab: tab, setTab: setTab }));
-    return (React.createElement("div", { className: "desk" },
-        React.createElement(Spread, Object.assign({}, shared, { openDay: null })),
-        React.createElement("div", { className: "desk-tools" },
-            React.createElement("button", { className: "btn ghost", onClick: () => setShowEditor(!showEditor) },
-                React.createElement(PenIcon, null),
-                " ",
-                showEditor ? "סגור עריכת נושאים" : "ערוך נושאים"),
-            React.createElement("button", { className: "btn ghost", onClick: () => firebase.auth().signOut() }, "\u05D9\u05E6\u05D9\u05D0\u05D4")),
-        showEditor ? (React.createElement("div", { className: "sheet-wrap", onClick: () => setShowEditor(false) },
-            React.createElement("div", { className: "sheet wide", onClick: (e) => e.stopPropagation() },
-                React.createElement(HabitsEditor, { month: month, monthKey: monthKey, onChange: update, inherited: inherited }),
-                React.createElement("button", { className: "btn primary", onClick: () => setShowEditor(false) }, "\u05E1\u05D9\u05D9\u05DE\u05EA\u05D9")))) : null));
+    return (React.createElement("div", { className: "app" },
+        React.createElement(TopBar, { onMenu: () => setMenu(true) }),
+        !month
+            ? React.createElement("div", { className: "boot" },
+                "\u05E4\u05D5\u05EA\u05D7 \u05D0\u05EA ",
+                HT.monthLabel(monthKey),
+                "\u2026")
+            : wide
+                ? React.createElement("div", { className: "desk" },
+                    React.createElement(Spread, Object.assign({}, shared)))
+                : React.createElement(Phone, Object.assign({}, shared, { tab: tab, setTab: setTab })),
+        month ? (React.createElement(Drawer, { open: menu, onClose: () => setMenu(false), month: month, monthKey: monthKey, onChange: update, inherited: inherited, theme: theme, setTheme: setTheme })) : null));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App, null));

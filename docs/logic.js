@@ -23,6 +23,9 @@ var HT = (function () {
 
   var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
 
+  var VERSION = "1.2.0";
+  var CREDIT = "Emanuel Nassimiha 2026";
+
   /* ---------- תאריכים ---------- */
 
   function pad2(n) { return (n < 10 ? "0" : "") + n; }
@@ -325,6 +328,8 @@ var HT = (function () {
   }
 
   return {
+    VERSION: VERSION,
+    CREDIT: CREDIT,
     HEB_MONTHS: HEB_MONTHS,
     DEFAULT_HABITS: DEFAULT_HABITS,
     FIRST_MONTH: FIRST_MONTH,
