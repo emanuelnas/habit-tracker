@@ -104,14 +104,16 @@ function PlusIcon() {
     return (React.createElement("svg", { viewBox: "0 0 24 24", className: "ico", "aria-hidden": "true" },
         React.createElement("path", { d: "M12 5v14M5 12h14" })));
 }
-function TopBar({ onMenu, onAdd }) {
+function TopBar({ onMenu }) {
     return (React.createElement("header", { className: "topbar" },
         React.createElement("div", { className: "topbar-actions" },
             React.createElement("button", { onClick: onMenu, "aria-label": "\u05E4\u05EA\u05D7 \u05EA\u05E4\u05E8\u05D9\u05D8" },
-                React.createElement(MenuIcon, null)),
-            React.createElement("button", { onClick: onAdd, "aria-label": "\u05D4\u05D6\u05E0\u05D4 \u05DE\u05D4\u05D9\u05E8\u05D4 \u05DC\u05D9\u05D5\u05DD" },
-                React.createElement(PlusIcon, null))),
+                React.createElement(MenuIcon, null))),
         React.createElement("h1", { className: "brand" }, "\u05D4\u05D0\u05D1\u05D9\u05D8 \u05D8\u05E8\u05D0\u05E7\u05E8")));
+}
+function AddButton({ onClick }) {
+    return (React.createElement("button", { className: "add-btn", onClick: onClick, "aria-label": "\u05D4\u05D6\u05E0\u05D4 \u05DE\u05D4\u05D9\u05E8\u05D4 \u05DC\u05D9\u05D5\u05DD" },
+        React.createElement(PlusIcon, null)));
 }
 function Drawer({ open, onClose, month, monthKey, onChange, inherited, theme, setTheme, now }) {
     if (!open)
@@ -312,11 +314,12 @@ function Spread(props) {
             React.createElement(NextMonthNote, { month: month, onChange: onChange })),
         React.createElement("div", { className: "gutter", "aria-hidden": "true" }),
         React.createElement("section", { className: "page page-left" },
+            React.createElement(AddButton, { onClick: () => props.openDay(today > 0 ? today : 1) }),
             React.createElement("div", { className: "left-inner" },
+                React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle }),
                 React.createElement("div", { className: "graphs" },
                     React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 132, rowH: ROW, headH: HEAD, color: "var(--pen)", ticks: 10, label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF" }),
-                    React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 86, rowH: ROW, headH: HEAD, color: "var(--pen-green)", ticks: (wb.max - wb.min) / 8, label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2' })),
-                React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle })),
+                    React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 86, rowH: ROW, headH: HEAD, color: "var(--pen-green)", ticks: (wb.max - wb.min) / 8, label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2' }))),
             React.createElement(Summary, { month: month, monthKey: monthKey, now: now }))));
 }
 /* ---------- תצוגת נייד ---------- */
@@ -330,7 +333,8 @@ function Phone(props) {
     return (React.createElement("div", { className: "phone" },
         React.createElement("nav", { className: "segments" }, [["grid", "החודש"], ["moments", "רגעים"], ["graphs", "גרפים"]].map(([id, label]) => (React.createElement("button", { key: id, className: tab === id ? "on" : "", onClick: () => setTab(id) }, label)))),
         React.createElement("div", { className: "phone-month" },
-            React.createElement(MonthNav, { monthKey: monthKey, onShift: props.onShift, status: props.status })),
+            React.createElement(MonthNav, { monthKey: monthKey, onShift: props.onShift, status: props.status }),
+            React.createElement(AddButton, { onClick: () => openDay(today > 0 ? today : 1) })),
         tab === "grid" ? (React.createElement("div", { className: "pane" },
             React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle, fluid: true, dayCol: true, onOpenDay: openDay }))) : null,
         tab === "moments" ? (React.createElement("div", { className: "pane" },
@@ -491,7 +495,7 @@ function App() {
         openDay: setSheetDay
     };
     return (React.createElement("div", { className: "app" },
-        React.createElement(TopBar, { onMenu: () => setMenu(true), onAdd: () => setSheetDay(today > 0 ? today : 1) }),
+        React.createElement(TopBar, { onMenu: () => setMenu(true) }),
         !month
             ? React.createElement("div", { className: "boot" },
                 "\u05E4\u05D5\u05EA\u05D7 \u05D0\u05EA ",
