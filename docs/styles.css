@@ -276,6 +276,7 @@ button { cursor: pointer; }
 .graph-axis {
   display: flex; justify-content: space-between; align-items: baseline;
   font-size: 10px; color: var(--ink-soft); margin-top: 3px;
+  box-sizing: border-box; width: 100%;
 }
 .graph-axis b { font-weight: 500; }
 

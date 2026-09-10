@@ -21,29 +21,31 @@ function MenuIcon() {
         React.createElement("path", { d: "M4 7h16M4 12h16M4 17h16" })));
 }
 /** גרף אנכי: הימים יורדים, הערך נמדד לרוחב. הצד הימני = הערך הנמוך. */
-function VerticalGraph({ points, min, max, width, rowH, headH, color, ticks, label, unit, labels }) {
+function VerticalGraph({ points, min, max, width, rowH, headH, color, label, unit, labels }) {
+    const COLS = 10; // הרוחב מחולק לעשר משבצות שוות
+    const cell = width / COLS;
     const total = points.length;
     const height = total * rowH;
-    const PAD = 4;
-    const x = (v) => (width - PAD) - ((v - min) / (max - min)) * (width - PAD * 2);
+    /* הערך ממופה למרכז המשבצת, כך שנקודה בקצה יושבת בתוך משבצת ולא על הקו */
+    const x = (v) => (width - cell / 2) - ((v - min) / (max - min)) * (width - cell);
     const y = (day) => (day - 0.5) * rowH;
     const segs = HT.segments(points);
-    const tickLines = [];
-    if (ticks > 0)
-        for (let t = min; t <= max + 0.0001; t += ticks)
-            tickLines.push(t);
+    const cols = [];
+    for (let i = 0; i <= COLS; i++) {
+        cols.push(Math.min(Math.max(i * cell, 0.5), width - 0.5));
+    }
     return (React.createElement("div", { className: "graph", style: { width: width + "px" } },
         React.createElement("div", { className: "graph-head", style: { height: headH + "px" } },
             React.createElement("span", { className: "graph-title" },
                 label,
                 " ",
                 React.createElement("i", null, unit)),
-            React.createElement("span", { className: "graph-axis", dir: "ltr" }, (labels || HT.scaleLabels(min, max, 6)).map((v, i) => React.createElement("b", { key: i }, v)))),
+            React.createElement("span", { className: "graph-axis", dir: "ltr", style: { paddingInline: cell / 2 + "px" } }, (labels || HT.scaleLabels(min, max, 6)).map((v, i) => React.createElement("b", { key: i }, v)))),
         React.createElement("svg", { width: width, height: height, className: "graph-svg", role: "img", "aria-label": label },
-            tickLines.map((t, i) => (React.createElement("line", { key: "t" + i, x1: x(t), x2: x(t), y1: "0", y2: height, className: i % 5 === 0 ? "tick major" : "tick" }))),
+            cols.map((cx, i) => (React.createElement("line", { key: "c" + i, x1: cx, x2: cx, y1: "0", y2: height, className: i % 5 === 0 ? "tick major" : "tick" }))),
             points.map((p, i) => (React.createElement("line", { key: "r" + i, x1: "0", x2: width, y1: i * rowH, y2: i * rowH, className: "tick row" }))),
             segs.map((seg, i) => (React.createElement("polyline", { key: "s" + i, className: "line", stroke: color, points: seg.map((p) => `${x(p.value)},${y(p.day)}`).join(" ") }))),
-            points.filter((p) => p.value !== null).map((p) => (React.createElement("circle", { key: "c" + p.day, cx: x(p.value), cy: y(p.day), r: "2.6", fill: color }))))));
+            points.filter((p) => p.value !== null).map((p) => (React.createElement("circle", { key: "d" + p.day, cx: x(p.value), cy: y(p.day), r: "2.6", fill: color }))))));
 }
 /* ---------- מסך כניסה ---------- */
 function LoginScreen() {
@@ -318,8 +320,8 @@ function Spread(props) {
             React.createElement(AddButton, { onClick: () => props.openDay(today > 0 ? today : 1) }),
             React.createElement("div", { className: "left-inner" },
                 React.createElement("div", { className: "graphs" },
-                    React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 132, rowH: ROW, headH: HEAD, color: "var(--pen)", ticks: 10, label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF" }),
-                    React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 104, rowH: ROW, headH: HEAD, color: "var(--pen-green)", ticks: (wb.max - wb.min) / 10, label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max) })),
+                    React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 132, rowH: ROW, headH: HEAD, color: "var(--pen)", label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF" }),
+                    React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 104, rowH: ROW, headH: HEAD, color: "var(--pen-green)", label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max) })),
                 React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle })),
             React.createElement(Summary, { month: month, monthKey: monthKey, now: now }))));
 }
@@ -348,8 +350,8 @@ function Phone(props) {
             React.createElement("div", { className: "graph-row" },
                 React.createElement("div", { className: "rownums", style: { paddingTop: "76px" } }, Array.from({ length: HT.daysInMonthKey(monthKey) }, (_, i) => i + 1).map((d) => (React.createElement("button", { key: d, className: "daynum sm" + (d === today ? " is-today" : ""), style: { height: "30px" }, onClick: () => openDay(d) },
                     React.createElement("b", null, d))))),
-                React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 128, rowH: 30, headH: 76, color: "var(--pen)", ticks: 10, label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF" }),
-                React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 100, rowH: 30, headH: 76, color: "var(--pen-green)", ticks: (wb.max - wb.min) / 10, label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max) })),
+                React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 128, rowH: 30, headH: 76, color: "var(--pen)", label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF" }),
+                React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 100, rowH: 30, headH: 76, color: "var(--pen-green)", label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max) })),
             React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle }))) : null));
 }
 /* ---------- האפליקציה ---------- */
