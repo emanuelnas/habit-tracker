@@ -23,7 +23,7 @@ var HT = (function () {
 
   var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
 
-  var VERSION = "2.5.0";
+  var VERSION = "2.5.1";
   var CREDIT = "Emanuel Nassimiha 2026";
 
   /* ---------- תאריכים ---------- */
@@ -138,6 +138,7 @@ var HT = (function () {
   }
 
   function getDay(month, day) {
+    if (!month || !month.days) return { moment: "", sleep: null, weight: null, marks: {} };
     var d = month.days[String(day)];
     return d || { moment: "", sleep: null, weight: null, marks: {} };
   }
@@ -409,6 +410,7 @@ var HT = (function () {
 
   /** ימים שכבר עברו ואין בהם ציון שינה */
   function missingSleepDays(month, monthKeyStr, now) {
+    if (!month) return [];
     var counted = countedDays(monthKeyStr, now);
     var out = [];
     for (var d = 1; d <= counted; d++) {

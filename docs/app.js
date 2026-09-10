@@ -658,7 +658,7 @@ function App() {
         return React.createElement("div", { className: "boot" }, "\u05E8\u05D2\u05E2\u2026");
     if (user === null)
         return React.createElement(LoginScreen, null);
-    const missingCount = HT.missingSleepDays(month, monthKey, now).length;
+    const missingCount = month ? HT.missingSleepDays(month, monthKey, now).length : 0;
     const shared = {
         month, monthKey, today, now, status, inherited, missing: missingCount,
         onToggle, onMoment, onNumber, onPatch, onShift, onChange: update,
@@ -682,4 +682,21 @@ function App() {
                     return Math.min(total, Math.max(1, cur + delta));
                 }) }))) : null));
 }
-ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App, null));
+/* רשת ביטחון: שגיאה בזמן ריצה תציג הודעה במקום מסך לבן */
+class ErrorBoundary extends React.Component {
+    constructor(props) { super(props); this.state = { error: null }; }
+    static getDerivedStateFromError(error) { return { error: error }; }
+    render() {
+        if (!this.state.error)
+            return this.props.children;
+        return (React.createElement("div", { className: "crash" },
+            React.createElement("h2", null, "\u05DE\u05E9\u05D4\u05D5 \u05E0\u05E9\u05D1\u05E8"),
+            React.createElement("p", null, "\u05E0\u05E1\u05D4 \u05DC\u05E8\u05E2\u05E0\u05DF \u05D0\u05EA \u05D4\u05D3\u05E3. \u05D0\u05DD \u05D6\u05D4 \u05D7\u05D5\u05D6\u05E8, \u05D6\u05D4 \u05D4\u05E4\u05E8\u05D8 \u05E9\u05D9\u05E2\u05D6\u05D5\u05E8 \u05DC\u05EA\u05E7\u05DF:"),
+            React.createElement("code", null, String(this.state.error && this.state.error.message)),
+            React.createElement("p", { className: "credit", dir: "ltr" },
+                "v",
+                HT.VERSION)));
+    }
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(ErrorBoundary, null,
+    React.createElement(App, null)));
