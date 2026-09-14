@@ -562,3 +562,5 @@ button { cursor: pointer; }
   background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius);
   font-size: 12px; word-break: break-word; text-align: left;
 }
+
+.field-hint { display: block; margin-top: 4px; font-size: 11px; color: var(--ink-soft); opacity: .8; }

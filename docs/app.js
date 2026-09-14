@@ -428,6 +428,46 @@ function NextMonthNote({ month, onChange, bare }) {
             React.createElement("span", null, "\u05DC\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0"),
             React.createElement("input", { value: month.nextMonth, maxLength: 120, placeholder: "\u05E0\u05D5\u05E9\u05D0\u05D9\u05DD \u05E9\u05D1\u05D0 \u05DC\u05D9 \u05DC\u05D4\u05D5\u05E1\u05D9\u05E3\u2026", onChange: (e) => onChange(Object.assign(Object.assign({}, month), { nextMonth: e.target.value })) }))));
 }
+/* ---------- שדה מספרי ---------- */
+/** שומר את מה שהוקלד כטקסט, ומוסר לאפליקציה רק ערך שלם ותקין.
+    כך אפשר להקליד "73." בדרך ל-"73.3" בלי שהשדה יתאפס. */
+function NumField({ label, value, placeholder, onCommit, max, hint }) {
+    const [text, setText] = useState(value === null || value === undefined ? "" : String(value));
+    const change = (raw) => {
+        const clean = raw.replace(",", ".");
+        if (clean !== "" && !/^\d*\.?\d*$/.test(clean))
+            return; // אותיות ומינוס לא נכנסים
+        setText(clean);
+        if (clean === "" || clean === ".") {
+            onCommit("");
+            return;
+        }
+        if (/^\d+(\.\d+)?$/.test(clean))
+            onCommit(clean);
+    };
+    const blur = () => {
+        if (text === "" || text === ".") {
+            setText("");
+            onCommit("");
+            return;
+        }
+        let n = Number(text);
+        if (!isFinite(n)) {
+            setText("");
+            onCommit("");
+            return;
+        }
+        if (max !== undefined && n > max)
+            n = max;
+        n = Math.round(n * 10) / 10;
+        setText(String(n));
+        onCommit(String(n));
+    };
+    return (React.createElement("label", { className: "field" },
+        React.createElement("span", null, label),
+        React.createElement("input", { inputMode: "decimal", value: text, placeholder: placeholder, onChange: (e) => change(e.target.value), onBlur: blur }),
+        hint ? React.createElement("small", { className: "field-hint" }, hint) : null));
+}
 /* ---------- חלון יום בודד ---------- */
 function DaySheet({ month, monthKey, day, onClose, onPatch, onToggle, onStep }) {
     if (!day)
@@ -453,12 +493,8 @@ function DaySheet({ month, monthKey, day, onClose, onPatch, onToggle, onStep }) 
                 React.createElement("span", null, "\u05E8\u05D2\u05E2 \u05D6\u05DB\u05D5\u05E8"),
                 React.createElement("input", { value: d.moment, maxLength: 110, placeholder: "\u05E9\u05D5\u05E8\u05D4 \u05D0\u05D7\u05EA \u05DE\u05D4\u05D9\u05D5\u05DD", onChange: (e) => onPatch(day, { moment: e.target.value }) })),
             React.createElement("div", { className: "two" },
-                React.createElement("label", { className: "field" },
-                    React.createElement("span", null, "\u05E6\u05D9\u05D5\u05DF \u05E9\u05D9\u05E0\u05D4"),
-                    React.createElement("input", { inputMode: "decimal", value: d.sleep === null ? "" : d.sleep, placeholder: "0\u2013100", onChange: (e) => onPatch(day, { sleep: e.target.value }) })),
-                React.createElement("label", { className: "field" },
-                    React.createElement("span", null, "\u05DE\u05E9\u05E7\u05DC"),
-                    React.createElement("input", { inputMode: "decimal", value: d.weight === null ? "" : d.weight, placeholder: '\u05E7"\u05D2', onChange: (e) => onPatch(day, { weight: e.target.value }) }))),
+                React.createElement(NumField, { key: "s" + monthKey + day, label: "\u05E6\u05D9\u05D5\u05DF \u05E9\u05D9\u05E0\u05D4", value: d.sleep, placeholder: "0\u2013100", max: 100, onCommit: (v) => onPatch(day, { sleep: v }) }),
+                React.createElement(NumField, { key: "w" + monthKey + day, label: "\u05DE\u05E9\u05E7\u05DC", value: d.weight, placeholder: "73.3", hint: '\u05E7"\u05D2, \u05D0\u05E4\u05E9\u05E8 \u05E2\u05E9\u05E8\u05D5\u05E0\u05D9', onCommit: (v) => onPatch(day, { weight: v }) })),
             React.createElement("div", { className: "sheet-habits" }, month.habits.map((h, i) => {
                 const on = HT.isMarked(month, day, h.id);
                 return (React.createElement("button", { key: h.id, className: "chip" + (on ? " on" : ""), onClick: () => onToggle(day, h.id) },

@@ -23,7 +23,7 @@ var HT = (function () {
 
   var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
 
-  var VERSION = "2.5.1";
+  var VERSION = "2.6.0";
   var CREDIT = "Emanuel Nassimiha 2026";
 
   /* ---------- תאריכים ---------- */
@@ -95,7 +95,7 @@ var HT = (function () {
 
   function numOrNull(v) {
     if (v === "" || v === null || v === undefined) return null;
-    var n = Number(v);
+    var n = typeof v === "string" ? Number(v.replace(",", ".").trim()) : Number(v);
     return isFinite(n) ? n : null;
   }
 
@@ -449,6 +449,7 @@ var HT = (function () {
     todayParts: todayParts,
     currentMonthKey: currentMonthKey,
     emptyMonth: emptyMonth,
+    numOrNull: numOrNull,
     normalizeMonth: normalizeMonth,
     getDay: getDay,
     withDay: withDay,
