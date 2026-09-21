@@ -23,7 +23,7 @@ var HT = (function () {
 
   var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
 
-  var VERSION = "2.6.1";
+  var VERSION = "2.7.0";
   var CREDIT = "Emanuel Nassimiha 2026";
 
   /* ---------- תאריכים ---------- */
@@ -408,6 +408,12 @@ var HT = (function () {
     return HEB_MONTHS[pp.month - 1].slice(0, 3) + " " + String(pp.year).slice(2);
   }
 
+  /** האם עבר זמן ההמתנה מאז הפעילות האחרונה. חותמת חסרה נחשבת פגה. */
+  function idleExpired(lastActive, nowMs, idleMs) {
+    if (!lastActive) return true;
+    return nowMs - lastActive > idleMs;
+  }
+
   /** ימים שכבר עברו ואין בהם ציון שינה */
   function missingSleepDays(month, monthKeyStr, now) {
     if (!month) return [];
@@ -465,6 +471,7 @@ var HT = (function () {
     countedDays: countedDays,
     habitStats: habitStats,
     insights: insights,
+    idleExpired: idleExpired,
     shortMonthLabel: shortMonthLabel,
     series: series,
     segments: segments,

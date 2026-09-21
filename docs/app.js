@@ -84,6 +84,10 @@ function LoginScreen() {
         setBusy(true);
         setError("");
         try {
+            try {
+                localStorage.setItem("ht-last-active", String(Date.now()));
+            }
+            catch (e) { }
             await firebase.auth().signInWithEmailAndPassword(email.trim(), password);
         }
         catch (e) {
@@ -592,28 +596,61 @@ function App() {
         return () => window.removeEventListener("resize", onResize);
     }, []);
     useEffect(() => firebase.auth().onAuthStateChanged((u) => setUser(u || null)), []);
-    /* ניתוק אוטומטי אחרי 10 דקות בלי פעילות */
+    /* ניתוק אוטומטי אחרי 10 דקות בלי פעילות.
+       נמדד לפי שעון אמיתי (חותמת זמן), כי ספארי מקפיא טיימרים כשהאתר ברקע. */
     useEffect(() => {
         if (!user)
             return;
         let timer = null;
         const IDLE_MS = 10 * 60 * 1000;
-        const reset = () => {
+        const KEY = "ht-last-active";
+        const readLast = () => { try {
+            return Number(localStorage.getItem(KEY)) || 0;
+        }
+        catch (e) {
+            return 0;
+        } };
+        const writeLast = (t) => { try {
+            localStorage.setItem(KEY, String(t));
+        }
+        catch (e) { } };
+        const expired = () => HT.idleExpired(readLast(), Date.now(), IDLE_MS);
+        const logout = () => { if (timer)
+            clearTimeout(timer); firebase.auth().signOut(); };
+        const arm = () => {
             if (timer)
                 clearTimeout(timer);
-            timer = setTimeout(() => { firebase.auth().signOut(); }, IDLE_MS);
+            timer = setTimeout(() => { if (expired())
+                logout();
+            else
+                arm(); }, 30 * 1000);
         };
+        const touch = () => { writeLast(Date.now()); arm(); };
+        /* חזרה לאתר: קודם בודקים כמה זמן עבר, ורק אם לא פג — ממשיכים */
+        const onVisible = () => {
+            if (document.visibilityState !== "visible")
+                return;
+            if (expired())
+                logout();
+            else
+                arm();
+        };
+        /* כניסה לאתר עם התחברות שמורה מלפני יותר מ-10 דקות — מנתקים מיד */
+        if (expired()) {
+            logout();
+            return;
+        }
         const events = ["pointerdown", "keydown", "wheel", "touchstart", "scroll"];
-        events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
-        const onVisible = () => { if (document.visibilityState === "visible")
-            reset(); };
+        events.forEach((e) => window.addEventListener(e, touch, { passive: true }));
         document.addEventListener("visibilitychange", onVisible);
-        reset();
+        window.addEventListener("pageshow", onVisible);
+        arm();
         return () => {
             if (timer)
                 clearTimeout(timer);
-            events.forEach((e) => window.removeEventListener(e, reset));
+            events.forEach((e) => window.removeEventListener(e, touch));
             document.removeEventListener("visibilitychange", onVisible);
+            window.removeEventListener("pageshow", onVisible);
         };
     }, [user]);
     useEffect(() => {
