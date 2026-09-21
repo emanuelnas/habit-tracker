@@ -592,12 +592,12 @@ function App() {
         return () => window.removeEventListener("resize", onResize);
     }, []);
     useEffect(() => firebase.auth().onAuthStateChanged((u) => setUser(u || null)), []);
-    /* ניתוק אוטומטי אחרי 5 דקות בלי פעילות */
+    /* ניתוק אוטומטי אחרי 10 דקות בלי פעילות */
     useEffect(() => {
         if (!user)
             return;
         let timer = null;
-        const IDLE_MS = 5 * 60 * 1000;
+        const IDLE_MS = 10 * 60 * 1000;
         const reset = () => {
             if (timer)
                 clearTimeout(timer);
