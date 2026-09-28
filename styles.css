@@ -636,3 +636,12 @@ button { cursor: pointer; }
   .print-next { font-size: 8.5pt; margin: 8px 0 0; }
   .print-foot { font-size: 7.5pt; color: #666; margin-top: 10px; text-align: center; }
 }
+
+.point-label {
+  font-size: 9px; fill: var(--ink-soft);
+  paint-order: stroke; stroke: var(--paper); stroke-width: 2.5px; stroke-linejoin: round;
+  dominant-baseline: central;
+}
+.summary .section { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin-top: 16px; }
+.summary .section-head { font-size: 14px; }
+.summary .narrative { margin: 0; }
