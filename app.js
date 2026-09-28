@@ -27,7 +27,9 @@ function MenuIcon() {
 }
 /** גרף אנכי: הימים יורדים, הערך נמדד לרוחב. הצד הימני = הערך הנמוך. */
 function VerticalGraph({ points, min, max, width, rowH, headH, color, label, unit, labels, monthKey, today }) {
-    const COLS = 10; // הרוחב מחולק לעשר משבצות שוות
+    /* משבצת אחת לכל מספר על הסרגל: קו אחד בין ערך לערך, והמספר במרכז המשבצת שלו */
+    const axis = labels || HT.scaleLabels(min, max, 6);
+    const COLS = axis.length;
     const cell = width / COLS;
     const total = points.length;
     const height = total * rowH;
@@ -45,7 +47,7 @@ function VerticalGraph({ points, min, max, width, rowH, headH, color, label, uni
                 label,
                 " ",
                 React.createElement("i", null, unit)),
-            React.createElement("span", { className: "graph-axis", dir: "ltr", style: { paddingInline: cell / 2 + "px" } }, (labels || HT.scaleLabels(min, max, 6)).map((v, i) => React.createElement("b", { key: i }, v)))),
+            React.createElement("span", { className: "graph-axis", dir: "ltr", style: { paddingInline: cell / 2 + "px" } }, axis.map((v, i) => React.createElement("b", { key: i }, v)))),
         React.createElement("svg", { width: width, height: height, className: "graph-svg", role: "img", "aria-label": label },
             monthKey ? points.filter((p) => HT.isWeekend(monthKey, p.day)).map((p) => (React.createElement("rect", { key: "w" + p.day, x: "0", y: (p.day - 1) * rowH, width: width, height: rowH, className: "row-weekend" }))) : null,
             monthKey && today > 0 ? (React.createElement("rect", { x: "0.75", y: (today - 1) * rowH + 0.75, width: width - 1.5, height: rowH - 1.5, className: "row-today" })) : null,
