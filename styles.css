@@ -174,7 +174,12 @@ button { cursor: pointer; }
 .grid { border: 1px solid var(--rule-strong); background: var(--card); }
 .grid.fluid { margin: 0 10px; }
 
-.grid-head { display: flex; align-items: flex-end; border-bottom: 1.5px solid var(--ink); }
+.grid-head {
+  display: flex; align-items: flex-end;
+  border-bottom: 1.5px solid var(--ink);
+  position: sticky; top: 0; z-index: 4;
+  background: var(--card);
+}
 
 .corner { width: 38px; flex: 0 0 38px; border-inline-start: 1px solid var(--rule); }
 
@@ -280,10 +285,7 @@ button { cursor: pointer; }
 .graph-head {
   display: flex; flex-direction: column; justify-content: flex-end;
   border-bottom: 1.5px solid var(--ink); padding-bottom: 4px;
-  position: sticky; top: 0; z-index: 3;
-  background: var(--paper);
 }
-.graph-row .rownums, .left-inner .rownums { position: relative; }
 .graph-title { font-size: 13px; }
 .graph-title i { font-style: normal; font-size: 11px; color: var(--ink-soft); opacity: .8; }
 .graph-axis {
@@ -466,7 +468,7 @@ button { cursor: pointer; }
   border-radius: 50%;
 }
 .add-btn:active { background: var(--tint); }
-.page-left > .add-btn { position: absolute; top: 16px; right: 22px; z-index: 2; }
+.page-left > .add-btn { position: absolute; top: 16px; right: 22px; z-index: 12; }
 
 .chev-ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .monthnav .ghost { display: flex; align-items: center; padding: 6px; }
@@ -639,8 +641,9 @@ button { cursor: pointer; }
 
 .point-label {
   font-size: 9px; fill: var(--ink-soft);
-  paint-order: stroke; stroke: var(--paper); stroke-width: 2.5px; stroke-linejoin: round;
+  paint-order: stroke; stroke: var(--card); stroke-width: 2.5px; stroke-linejoin: round;
   dominant-baseline: central;
+  direction: ltr; unicode-bidi: isolate;   /* בלי זה הטקסט נצמד לצד ההפוך ויושב על הנקודה */
 }
 .summary .section { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin-top: 16px; }
 .summary .section-head { font-size: 14px; }

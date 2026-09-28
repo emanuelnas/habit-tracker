@@ -55,7 +55,7 @@ function VerticalGraph({ points, min, max, width, rowH, headH, color, label, uni
             points.filter((p) => p.value !== null).map((p) => {
                 const px = x(p.value);
                 const right = px < width / 2; /* מרחיקים את המספר מהקצה הקרוב */
-                return (React.createElement("text", { key: "l" + p.day, className: "point-label", x: right ? px + 6 : px - 6, y: y(p.day), textAnchor: right ? "start" : "end" }, p.value));
+                return (React.createElement("text", { key: "l" + p.day, className: "point-label", x: right ? px + 8 : px - 8, y: y(p.day), textAnchor: right ? "start" : "end" }, p.value));
             }),
             points.filter((p) => p.value !== null).map((p) => (React.createElement("circle", { key: "d" + p.day, cx: x(p.value), cy: y(p.day), r: "2.6", fill: color }))))));
 }
