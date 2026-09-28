@@ -26,10 +26,11 @@ function MenuIcon() {
         React.createElement("path", { d: "M4 7h16M4 12h16M4 17h16" })));
 }
 /** גרף אנכי: הימים יורדים, הערך נמדד לרוחב. הצד הימני = הערך הנמוך. */
-function VerticalGraph({ points, min, max, width, rowH, headH, color, label, unit, labels, monthKey, today }) {
-    /* משבצת אחת לכל מספר על הסרגל: קו אחד בין ערך לערך, והמספר במרכז המשבצת שלו */
+function VerticalGraph({ points, min, max, width, rowH, headH, color, label, unit, labels, monthKey, today, cells, labelEvery }) {
+    /* כל משבצת היא צעד אחד בסקאלה, והמספר עומד בדיוק במרכז המשבצת שלו */
     const axis = labels || HT.scaleLabels(min, max, 6);
-    const COLS = axis.length;
+    const COLS = cells || axis.length;
+    const every = labelEvery || 1;
     const cell = width / COLS;
     const total = points.length;
     const height = total * rowH;
@@ -47,7 +48,7 @@ function VerticalGraph({ points, min, max, width, rowH, headH, color, label, uni
                 label,
                 " ",
                 React.createElement("i", null, unit)),
-            React.createElement("span", { className: "graph-axis", dir: "ltr", style: { paddingInline: cell / 2 + "px" } }, axis.map((v, i) => React.createElement("b", { key: i }, v)))),
+            React.createElement("span", { className: "graph-axis", dir: "ltr" }, axis.map((v, i) => (React.createElement("b", { key: i, style: { left: ((i * every) + 0.5) * cell + "px" } }, v))))),
         React.createElement("svg", { width: width, height: height, className: "graph-svg", role: "img", "aria-label": label },
             monthKey ? points.filter((p) => HT.isWeekend(monthKey, p.day)).map((p) => (React.createElement("rect", { key: "w" + p.day, x: "0", y: (p.day - 1) * rowH, width: width, height: rowH, className: "row-weekend" }))) : null,
             monthKey && today > 0 ? (React.createElement("rect", { x: "0.75", y: (today - 1) * rowH + 0.75, width: width - 1.5, height: rowH - 1.5, className: "row-today" })) : null,
@@ -412,7 +413,8 @@ function Drawer({ open, onClose, month, monthKey, onChange, inherited, theme, se
                     "\u05D4\u05D3\u05E4\u05E1 \u05D0\u05EA ",
                     HT.monthLabel(monthKey))),
             React.createElement(Section, { title: "\u05D7\u05E9\u05D1\u05D5\u05DF" },
-                React.createElement(PasswordChange, null),
+                React.createElement(Section, { title: "\u05D4\u05D7\u05DC\u05E4\u05EA \u05E1\u05D9\u05E1\u05DE\u05D4" },
+                    React.createElement(PasswordChange, null)),
                 React.createElement("button", { className: "btn ghost wide", onClick: () => firebase.auth().signOut() }, "\u05D9\u05E6\u05D9\u05D0\u05D4 \u05DE\u05D4\u05D7\u05E9\u05D1\u05D5\u05DF"),
                 React.createElement("p", { className: "credit", dir: "ltr" },
                     "v",
@@ -667,7 +669,7 @@ function Spread(props) {
             React.createElement(AddButton, { onClick: () => props.openDay(today > 0 ? today : 1), alert: props.missing > 0, title: props.missing > 0 ? props.missing + " ימים ללא ציון שינה" : "הזנה מהירה ליום" }),
             React.createElement("div", { className: "left-inner" },
                 React.createElement("div", { className: "graphs" },
-                    React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 132, rowH: ROW, headH: HEAD, color: "var(--pen)", label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF", monthKey: monthKey, today: today }),
+                    React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 132, rowH: ROW, headH: HEAD, color: "var(--pen)", label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF", monthKey: monthKey, today: today, cells: 11, labelEvery: 2 }),
                     React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 104, rowH: ROW, headH: HEAD, color: "var(--pen-green)", label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max), monthKey: monthKey, today: today })),
                 React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle })),
             React.createElement(Summary, { month: month, monthKey: monthKey, now: now }))));
@@ -698,7 +700,7 @@ function Phone(props) {
             React.createElement("div", { className: "graph-row" },
                 React.createElement("div", { className: "rownums", style: { paddingTop: "76px" } }, Array.from({ length: HT.daysInMonthKey(monthKey) }, (_, i) => i + 1).map((d) => (React.createElement("button", { key: d, className: "daynum sm" + (d === today ? " is-today" : ""), style: { height: "30px" }, onClick: () => openDay(d) },
                     React.createElement("b", null, d))))),
-                React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 128, rowH: 30, headH: 76, color: "var(--pen)", label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF", monthKey: monthKey, today: today }),
+                React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 128, rowH: 30, headH: 76, color: "var(--pen)", label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF", monthKey: monthKey, today: today, cells: 11, labelEvery: 2 }),
                 React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 100, rowH: 30, headH: 76, color: "var(--pen-green)", label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max), monthKey: monthKey, today: today })),
             React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle }))) : null));
 }

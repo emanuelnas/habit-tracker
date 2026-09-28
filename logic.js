@@ -23,7 +23,7 @@ var HT = (function () {
 
   var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
 
-  var VERSION = "3.3.0";
+  var VERSION = "3.4.0";
   var CREDIT = "Emanuel Nassimiha 2026";
 
   /* ---------- תאריכים ---------- */

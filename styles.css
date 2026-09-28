@@ -289,11 +289,14 @@ button { cursor: pointer; }
 .graph-title { font-size: 13px; }
 .graph-title i { font-style: normal; font-size: 11px; color: var(--ink-soft); opacity: .8; }
 .graph-axis {
-  display: flex; justify-content: space-between; align-items: baseline;
-  font-size: 10px; color: var(--ink-soft); margin-top: 3px;
-  box-sizing: border-box; width: 100%;
+  position: relative; display: block; height: 13px;
+  font-size: 10px; color: var(--ink-soft); margin-top: 3px; width: 100%;
 }
-.graph-axis b { font-weight: 500; }
+.graph-axis b {
+  position: absolute; bottom: 0;
+  transform: translateX(-50%);          /* מרכז המספר בדיוק מעל מרכז העמודה */
+  font-weight: 500; white-space: nowrap;
+}
 
 .graph-svg { display: block; background: var(--card); }
 .tick { stroke: var(--rule); stroke-width: 1; }
@@ -648,3 +651,7 @@ button { cursor: pointer; }
 .summary .section { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin-top: 16px; }
 .summary .section-head { font-size: 14px; }
 .summary .narrative { margin: 0; }
+
+.section .section { border-top: none; border-bottom: none; }
+.section .section .section-head { padding: 10px 2px; font-size: 14px; color: var(--ink-soft); }
+.section .section .section-body { padding-bottom: 8px; }
