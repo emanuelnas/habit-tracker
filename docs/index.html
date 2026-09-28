@@ -3,43 +3,2265 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#16232F" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="Log" />
-<link rel="manifest" href="manifest.json?v=2.7.0" />
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2.7.0" />
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2.7.0" />
-<title>האביט טראקר</title>
-
+<title>האביט טראקר — תצוגה מקדימה</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Gveret+Levin+AlefAlefAlef&family=Instrument+Serif&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css?v=2.7.0" />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Gveret+Levin+AlefAlefAlef&display=swap" rel="stylesheet" />
+<style>
+/* ==========================================================================
+   styles.css — אוף־וייט ודיו. הטבלה מציירת את המשבצות שלה בעצמה,
+   כדי שכל איקס יישב בדיוק מתחת לנושא שלו בכל רמת זום.
+   ========================================================================== */
+
+:root {
+  --paper: #F4F5F6;         /* אוף־וייט קריר */
+  --card: #FCFCFD;
+  --rule: #DFE4E9;
+  --rule-strong: #C3CCD4;
+  --ink: #17212B;
+  --ink-soft: #5C6B78;
+  --pen: #2B4C8C;
+  --pen-green: #1F6B4A;
+  --pen-red: #B3271E;
+  --band: #17212B;
+  --band-text: #FFFFFF;
+  --tint: rgba(43, 76, 140, .05);
+  --row: 30px;
+  --col: 34px;
+  --radius: 4px;
+}
+
+[data-theme="dark"] {
+  --paper: #12171C;
+  --card: #171E25;
+  --rule: #29323B;
+  --rule-strong: #3C4855;
+  --ink: #E6ECF1;
+  --ink-soft: #94A2AF;
+  --pen: #7FA8E8;
+  --pen-green: #5FC79A;
+  --pen-red: #E8827A;
+  --band: #0C1116;
+  --band-text: #E6ECF1;
+  --tint: rgba(127, 168, 232, .07);
+}
+
+* { box-sizing: border-box; }
+
+html { background: var(--paper); }
+
+body {
+  margin: 0;
+  font-family: "Heebo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, button { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.brand {
+  font-family: "Gveret Levin AlefAlefAlef", "Heebo", sans-serif;
+  font-weight: 400;
+  letter-spacing: .01em;
+  margin: 0;
+}
+.brand.big { font-size: 42px; line-height: 1.05; }
+.brand.sm { font-size: 24px; }
+
+.boot { padding: 60px 20px; text-align: center; color: var(--ink-soft); }
+
+/* ---------- כניסה ---------- */
+
+.login { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.login-card {
+  width: min(380px, 100%);
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 30px 26px 26px;
+  box-shadow: 0 10px 30px rgba(23, 33, 43, .07);
+}
+.logo {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400; font-size: 64px; line-height: 1;
+  margin: 6px 0 0; text-align: center; letter-spacing: .01em;
+}
+.login-sub { margin: 10px 0 28px; color: var(--ink-soft); font-size: 15px; text-align: center; }
+
+.field { display: block; margin-bottom: 16px; }
+.field > span { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; }
+.field input {
+  width: 100%; padding: 11px 12px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+.field input:focus { border-color: var(--pen); outline: none; }
+.login-error { color: var(--pen-red); font-size: 14px; margin: 0 0 14px; }
+
+.btn {
+  border: 1px solid var(--rule-strong);
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn.primary {
+  width: 100%; justify-content: center;
+  background: var(--band); border-color: var(--band); color: var(--band-text);
+  padding: 12px;
+}
+.btn.primary:disabled { opacity: .55; }
+.btn.ghost { background: transparent; border-color: var(--rule); color: var(--ink-soft); }
+.btn.wide { width: 100%; justify-content: center; }
+
+.ghost {
+  background: none; border: none; color: var(--ink-soft);
+  padding: 4px 10px; font-size: 22px; line-height: 1; border-radius: var(--radius);
+}
+.ghost:disabled { opacity: .3; }
+.ghost.sm { font-size: 15px; padding: 4px 7px; }
+.ghost.danger { color: var(--pen-red); }
+.ico { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+
+/* ---------- באנר עליון ---------- */
+
+.topbar {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--band);
+  color: var(--band-text);
+  padding: 12px 16px;
+  min-height: 56px;
+}
+.topbar .brand { color: var(--band-text); display: flex; align-items: baseline; gap: 7px; }
+.brand-log { font-family: "Instrument Serif", Georgia, serif; font-size: 30px; line-height: 1; }
+.brand-rest { font-family: "Heebo", sans-serif; font-size: 15px; letter-spacing: .02em; opacity: .8; }
+.brand.sm { display: flex; align-items: baseline; gap: 6px; }
+.brand.sm .brand-log { font-size: 24px; }
+.brand.sm .brand-rest { font-size: 13px; }
+.topbar-actions {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  display: flex; align-items: center; gap: 2px;
+}
+.topbar-actions button {
+  background: none; border: none; color: var(--band-text);
+  padding: 8px; border-radius: var(--radius); display: flex;
+}
+.topbar-actions button:active { background: rgba(255, 255, 255, .14); }
+
+/* ---------- לשוניות עליונות ---------- */
+
+.segments { display: flex; border-bottom: 1px solid var(--rule); background: var(--card); }
+.segments button {
+  flex: 1; background: none; border: none; padding: 12px 4px;
+  color: var(--ink-soft); font-size: 15px;
+}
+.segments button.on { color: var(--ink); box-shadow: inset 0 -2.5px 0 var(--ink); }
+
+.phone-month { padding: 10px 12px 4px; display: flex; align-items: center; gap: 10px; }
+.phone-month .monthnav { flex: 1; min-width: 0; }
+
+/* ---------- ניווט חודש ---------- */
+
+.monthnav { display: flex; align-items: center; gap: 4px; }
+.month-title {
+  font-family: "Gveret Levin AlefAlefAlef", "Heebo", sans-serif;
+  font-size: 30px; font-weight: 400; margin: 0; flex: 1; text-align: start;
+}
+.status { font-size: 12px; color: var(--ink-soft); }
+.status.saving { color: var(--pen); }
+.status.error { color: var(--pen-red); }
+
+/* ---------- טבלה ---------- */
+
+.grid { border: 1px solid var(--rule-strong); background: var(--card); }
+.grid.fluid { margin: 0 10px; }
+
+.grid-head { display: flex; align-items: flex-end; border-bottom: 1.5px solid var(--ink); }
+
+.corner { width: 38px; flex: 0 0 38px; border-inline-start: 1px solid var(--rule); }
+
+.habit-label {
+  width: var(--col); flex: 0 0 var(--col);
+  height: 100%;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 6px; overflow: hidden;
+  border-inline-start: 1px solid var(--rule);
+}
+.grid.fluid .habit-label { flex: 1 1 0; width: auto; min-width: 30px; }
+.habit-label span {
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  white-space: nowrap; font-size: 13px; overflow: hidden; text-overflow: ellipsis; max-height: 100%;
+}
+
+.numhead {
+  width: 44px; flex: 0 0 44px;
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-size: 12px; color: var(--ink-soft);
+  align-self: flex-end; padding-bottom: 6px;
+  border-inline-start: 1px solid var(--rule);
+}
+
+.grid-row { display: flex; align-items: stretch; border-bottom: 1px solid var(--rule); }
+.grid-row:last-child { border-bottom: none; }
+.grid-row.is-weekend { background: var(--tint); }
+.grid-row.is-today { box-shadow: inset 0 0 0 1.5px rgba(179, 39, 30, .4); }
+
+.daycol {
+  width: 38px; flex: 0 0 38px;
+  background: none; border: none; border-inline-start: 1px solid var(--rule);
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+  color: var(--ink-soft); padding: 0;
+}
+.daycol b { font-size: 14px; font-weight: 500; color: var(--ink); }
+.daycol i { font-size: 10px; font-style: normal; opacity: .7; }
+.is-today .daycol b { color: var(--pen-red); font-weight: 700; }
+
+.cell {
+  width: var(--col); flex: 0 0 var(--col);
+  background: none; border: none;
+  border-inline-start: 1px solid var(--rule);
+  display: grid; place-items: center; padding: 0;
+}
+.grid.fluid .cell { flex: 1 1 0; width: auto; min-width: 30px; }
+.cell:active { background: var(--tint); }
+
+.x { width: 62%; height: 62%; max-width: 24px; max-height: 24px; fill: none; stroke: var(--pen); stroke-width: 2.2; stroke-linecap: round; }
+
+.numcell {
+  width: 44px; flex: 0 0 44px;
+  border: none; border-inline-start: 1px solid var(--rule);
+  background: transparent; text-align: center;
+  font-size: 13px; color: var(--ink-soft); padding: 0; min-width: 0;
+}
+.numcell:focus { outline: none; background: var(--tint); color: var(--ink); }
+
+/* ---------- רגעים ---------- */
+
+.moments { margin: 0 10px; border: 1px solid var(--rule-strong); background: var(--card); }
+.moment-row { display: flex; align-items: center; border-bottom: 1px solid var(--rule); }
+.moment-row:last-child { border-bottom: none; }
+.moment-row.is-weekend { background: var(--tint); }
+.moment-row.is-today { box-shadow: inset 3px 0 0 var(--pen-red); }
+
+.daynum {
+  flex: 0 0 40px;
+  display: flex; align-items: baseline; justify-content: center; gap: 3px;
+  background: none; border: none; border-inline-end: 1px solid var(--rule);
+  padding: 0; color: var(--ink-soft); align-self: stretch;
+}
+.daynum b { font-size: 14px; font-weight: 500; color: var(--ink); }
+.daynum i { font-size: 10px; font-style: normal; opacity: .7; }
+.daynum.sm { flex: none; width: 36px; border-inline-end: none; border-bottom: 1px solid var(--rule); }
+.daynum.is-today b { color: var(--pen-red); font-weight: 700; }
+
+.moment-input {
+  flex: 1; min-width: 0; border: none; background: transparent;
+  padding: 2px 10px; font-size: 14.5px;
+}
+.moment-input::placeholder { color: var(--ink-soft); opacity: .55; }
+.moment-input:focus { outline: none; background: var(--tint); }
+
+.nextmonth { margin: 16px 10px 0; border-top: 1.5px solid var(--ink); padding-top: 10px; }
+.nextmonth label { display: flex; align-items: center; gap: 10px; }
+.nextmonth span { font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
+.nextmonth input {
+  flex: 1; min-width: 0; border: none;
+  border-bottom: 1px dashed var(--rule-strong);
+  background: transparent; padding: 4px 2px; color: var(--pen-red);
+}
+.nextmonth input:focus { outline: none; border-bottom-color: var(--pen-red); }
+
+/* ---------- גרפים ---------- */
+
+.graphs { display: flex; gap: 8px; }
+.graph-row { display: flex; align-items: flex-start; margin: 0 10px; overflow-x: auto; }
+.rownums { background: var(--card); }
+.rownums .daynum { display: flex; align-items: center; justify-content: center; }
+
+.graph { flex: none; }
+.graph-head {
+  display: flex; flex-direction: column; justify-content: flex-end;
+  border-bottom: 1.5px solid var(--ink); padding-bottom: 4px;
+  position: sticky; top: 0; z-index: 3;
+  background: var(--paper);
+}
+.graph-row .rownums, .left-inner .rownums { position: relative; }
+.graph-title { font-size: 13px; }
+.graph-title i { font-style: normal; font-size: 11px; color: var(--ink-soft); opacity: .8; }
+.graph-axis {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 10px; color: var(--ink-soft); margin-top: 3px;
+  box-sizing: border-box; width: 100%;
+}
+.graph-axis b { font-weight: 500; }
+
+.graph-svg { display: block; background: var(--card); }
+.tick { stroke: var(--rule); stroke-width: 1; }
+.tick.major { stroke: var(--rule-strong); }
+.tick.row { stroke: var(--rule); opacity: .55; }
+.line { fill: none; stroke-width: 1.7; stroke-linejoin: round; stroke-linecap: round; }
+
+.missing {
+  margin: 12px 10px;
+  padding: 8px 10px;
+  border-inline-start: 3px solid var(--pen-red);
+  background: rgba(179, 39, 30, .07);
+  font-size: 13px; border-radius: 3px;
+}
+
+/* ---------- סיכום ---------- */
+
+.summary { margin: 24px 10px 40px; }
+.band {
+  background: var(--band); color: var(--band-text);
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 7px 14px; border-radius: 3px;
+}
+.band h3 { margin: 0; font-size: 15px; font-weight: 500; }
+.band span { font-size: 12px; opacity: .7; }
+
+.summary-body { display: flex; gap: 20px; align-items: flex-start; padding: 16px 4px 0; flex-wrap: wrap; }
+.overall { text-align: center; flex: none; width: 150px; margin: 0 auto; }
+.overall p { margin: 8px 0 0; font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
+
+.rings {
+  flex: 1; min-width: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 14px 6px;
+}
+.ring-cell { text-align: center; }
+.ring-cell b { display: block; font-size: 12.5px; font-weight: 500; margin-top: 4px; }
+.ring-cell i { display: block; font-style: normal; font-size: 11px; color: var(--ink-soft); }
+
+.ring { display: block; margin: 0 auto; }
+.ring-track { fill: none; stroke: var(--rule); }
+.ring-fill { fill: none; stroke-linecap: round; }
+.ring-text { text-anchor: middle; dominant-baseline: central; font-size: 15px; font-weight: 500; fill: var(--ink); }
+
+/* ---------- מחברת (מסך רחב) ---------- */
+
+.desk { padding: 22px 20px 60px; }
+.spread {
+  display: flex; max-width: 1500px; margin: 0 auto;
+  border-radius: 6px; overflow: hidden; background: var(--card);
+  box-shadow: 0 14px 34px rgba(23, 33, 43, .14);
+}
+.page { padding: 20px 22px 24px; }
+.page-right { flex: 1 1 46%; }
+.page-left { flex: 1 1 54%; display: flex; flex-direction: column; position: relative; }
+.gutter {
+  width: 24px; flex: 0 0 24px;
+  background:
+    linear-gradient(90deg, rgba(23,33,43,.13), rgba(23,33,43,0) 45%),
+    linear-gradient(270deg, rgba(23,33,43,.13), rgba(23,33,43,0) 45%),
+    var(--card);
+}
+.page-head { display: flex; flex-direction: column; justify-content: space-between; }
+.page-kicker {
+  margin: 0 0 8px; font-size: 13px; color: var(--ink-soft);
+  border-bottom: 1.5px solid var(--ink); padding-bottom: 6px;
+}
+.left-inner { display: flex; gap: 10px; align-items: flex-start; }
+.desk .moments, .desk .grid { margin: 0; border: none; }
+.desk .grid { border-inline-start: 1px solid var(--rule-strong); }
+.desk .summary { margin: 22px 0 0; }
+.desk .nextmonth { margin-inline: 0; }
+
+/* ---------- מגירת התפריט ---------- */
+
+.drawer-wrap { position: fixed; inset: 0; background: rgba(12, 17, 22, .45); z-index: 30; display: flex; }
+.drawer {
+  width: min(340px, 88vw);
+  margin-inline-end: auto;
+  background: var(--paper);
+  height: 100%;
+  overflow-y: auto;
+  padding: 14px 16px calc(30px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column;
+  box-shadow: 6px 0 24px rgba(12, 17, 22, .25);
+}
+.drawer-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; }
+.section { border-top: 1px solid var(--rule); }
+.section:last-of-type { border-bottom: 1px solid var(--rule); }
+.section-head {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  background: none; border: none; padding: 14px 2px; font-size: 15px; color: var(--ink);
+}
+.section-head .chev {
+  font-style: normal; font-size: 15px; color: var(--ink-soft);
+  transition: transform .18s ease;
+}
+.section.open .section-head .chev { transform: rotate(180deg); }
+.section-body { padding: 0 2px 16px; }
+
+.toggle { display: flex; border: 1px solid var(--rule-strong); border-radius: var(--radius); overflow: hidden; }
+.toggle button { flex: 1; background: var(--card); border: none; padding: 10px; color: var(--ink-soft); }
+.toggle button.on { background: var(--band); color: var(--band-text); }
+
+/* ---------- חלון יום ---------- */
+
+.sheet-wrap { position: fixed; inset: 0; background: rgba(12, 17, 22, .4); display: flex; align-items: flex-end; z-index: 40; }
+.sheet {
+  width: 100%; max-height: 88vh; overflow-y: auto;
+  background: var(--paper); border-radius: 12px 12px 0 0;
+  padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
+}
+.sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.sheet-head h3 { margin: 0; font-size: 17px; font-weight: 500; }
+.sheet-nav { display: flex; align-items: center; gap: 2px; }
+.two { display: flex; gap: 12px; }
+.two .field { flex: 1; }
+.sheet-habits { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--rule-strong); background: var(--card);
+  border-radius: 20px; padding: 8px 13px; font-size: 14px;
+}
+.chip.on { border-color: var(--pen); background: var(--tint); }
+.chip .x { width: 15px; height: 15px; }
+.chip .dot { width: 13px; height: 13px; border: 1px solid var(--rule-strong); border-radius: 50%; }
+
+/* ---------- עורך נושאים ---------- */
+
+.editor h3 { margin: 0 0 6px; font-size: 16px; font-weight: 500; }
+.hint { margin: 0 0 14px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+.hint.note { color: var(--pen-red); }
+.editor-list { list-style: none; margin: 0 0 14px; padding: 0; }
+.editor-list li { display: flex; align-items: center; gap: 2px; border-bottom: 1px solid var(--rule); }
+.editor-list input {
+  flex: 1; min-width: 0; border: none; background: transparent;
+  padding: 9px 4px; font-size: 15px;
+}
+.editor-list input:focus { outline: none; background: var(--tint); }
+.editor-add { display: flex; gap: 8px; }
+.editor-add input {
+  flex: 1; min-width: 0; border: 1px solid var(--rule-strong);
+  border-radius: var(--radius); padding: 9px 11px; background: var(--card);
+}
+
+.credit {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 11.5px;
+  letter-spacing: .03em;
+  color: var(--ink-soft);
+  opacity: .75;
+}
+
+/* מקטעים חשופים בתוך המגירה */
+.summary.bare { margin: 0; }
+.summary.bare .summary-body { padding: 0; gap: 14px; }
+.summary.bare .overall { width: 100%; }
+.nextmonth.bare { margin: 0; border-top: none; padding-top: 0; }
+.nextmonth.bare label { flex-direction: column; align-items: stretch; gap: 6px; }
+.nextmonth.bare input { border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: 9px 11px; }
+.section .editor h3 { display: none; }
+.section .credit { margin-top: 12px; }
+
+/* כפתור הזנה מהירה */
+.add-btn {
+  flex: none;
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  border: 1px solid var(--rule-strong);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 50%;
+}
+.add-btn:active { background: var(--tint); }
+.page-left > .add-btn { position: absolute; top: 16px; right: 22px; z-index: 2; }
+
+.chev-ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.monthnav .ghost { display: flex; align-items: center; padding: 6px; }
+
+.month-select {
+  width: 100%; margin-bottom: 14px;
+  border: 1px solid var(--rule-strong); border-radius: var(--radius);
+  background: var(--card); color: var(--ink); padding: 9px 11px;
+}
+.browser .summary.bare { margin-top: 4px; }
+
+/* דיאלוג אישור */
+.confirm-wrap {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(12, 17, 22, .5);
+  display: grid; place-items: center; padding: 24px;
+}
+.confirm {
+  width: min(340px, 100%);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 18px 44px rgba(12, 17, 22, .3);
+}
+.confirm h3 { margin: 0 0 8px; font-size: 17px; font-weight: 500; }
+.confirm p { margin: 0 0 18px; font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); }
+.confirm-actions { display: flex; gap: 8px; }
+.confirm-actions .btn { flex: 1; justify-content: center; width: auto; }
+.btn.primary.danger { background: var(--pen-red); border-color: var(--pen-red); color: #fff; }
+
+.row-weekend { fill: var(--tint); }
+.row-today { fill: none; stroke: rgba(179, 39, 30, .4); stroke-width: 1.5; }
+
+/* שחזור סיסמה */
+.linky {
+  display: block; width: 100%; margin-top: 12px;
+  background: none; border: none; color: var(--ink-soft);
+  font-size: 13px; text-decoration: underline; text-underline-offset: 3px;
+}
+.login-note { color: var(--pen-green); font-size: 13px; line-height: 1.5; margin: 0 0 14px; }
+
+/* נקודת התראה על כפתור ההזנה */
+.add-btn { position: relative; }
+.add-btn .badge {
+  position: absolute; top: -2px; left: -2px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--pen-red); border: 2px solid var(--paper);
+}
+
+/* תובנות */
+.insights {
+  list-style: none; margin: 18px 0 0; padding: 14px 0 0;
+  border-top: 1px solid var(--rule);
+}
+.insights li {
+  font-size: 13px; line-height: 1.6; color: var(--ink-soft);
+  padding-inline-start: 14px; position: relative; margin-bottom: 6px;
+}
+.insights li::before {
+  content: ""; position: absolute; inset-inline-start: 0; top: 9px;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--pen);
+}
+
+/* מבט שנתי */
+.year { font-size: 11px; }
+.year-row { display: flex; align-items: center; gap: 2px; margin-bottom: 2px; }
+.year-label { flex: 0 0 46px; color: var(--ink-soft); }
+.year-cell { flex: 1 1 0; height: 22px; background: var(--rule); border-radius: 2px; position: relative; overflow: hidden; }
+.year-cell i { position: absolute; inset: 0; background: var(--pen); }
+.year-cell.head {
+  background: none; height: auto; color: var(--ink-soft); text-align: center;
+}
+.year .hint { margin-top: 10px; }
+
+/* חיפוש ברגעים */
+.search-input {
+  width: 100%; border: 1px solid var(--rule-strong); border-radius: var(--radius);
+  padding: 10px 12px; background: var(--card); margin-bottom: 10px;
+}
+.results { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow-y: auto; }
+.results li { border-bottom: 1px solid var(--rule); }
+.results button {
+  width: 100%; text-align: start; background: none; border: none;
+  padding: 9px 2px; display: flex; flex-direction: column; gap: 2px;
+}
+.results b { font-size: 11.5px; font-weight: 500; color: var(--ink-soft); }
+.results span { font-size: 13.5px; line-height: 1.45; }
+.results button:active { background: var(--tint); }
+
+.crash { max-width: 520px; margin: 60px auto; padding: 24px; text-align: center; }
+.crash h2 { margin: 0 0 8px; font-size: 20px; font-weight: 500; }
+.crash p { color: var(--ink-soft); font-size: 14px; line-height: 1.6; }
+.crash code {
+  display: block; margin: 14px 0; padding: 10px 12px; direction: ltr;
+  background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius);
+  font-size: 12px; word-break: break-word; text-align: left;
+}
+
+.field-hint { display: block; margin-top: 4px; font-size: 11px; color: var(--ink-soft); opacity: .8; }
+
+/* ---------- תוספות 3.0 ---------- */
+
+.narrative {
+  margin: 16px 4px 4px; font-size: 14px; line-height: 1.75; color: var(--ink);
+}
+.summary.bare .narrative { margin: 0 0 14px; font-size: 13px; }
+
+.linky.danger { color: var(--pen-red); margin-top: 16px; }
+.note-ok { color: var(--pen-green); font-size: 13px; margin: 0 0 12px; }
+.hint.note-ok { color: var(--pen-green); }
+
+.toggle.three button { font-size: 14px; padding: 9px 4px; }
+
+.bulk-range { display: flex; gap: 8px; margin: 10px 0; }
+.bulk-range label { flex: 1; }
+.bulk-range span { display: block; font-size: 12px; color: var(--ink-soft); margin-bottom: 4px; }
+.bulk-range select {
+  width: 100%; border: 1px solid var(--rule-strong); border-radius: var(--radius);
+  background: var(--card); color: var(--ink); padding: 8px;
+}
+.bulk .btn.wide { margin-top: 12px; }
+
+.pwd .btn.wide { margin-top: 4px; }
+
+.status.retry {
+  background: none; border: 1px solid var(--pen-red); color: var(--pen-red);
+  border-radius: 20px; padding: 4px 10px; font-size: 11.5px; white-space: nowrap;
+}
+
+.banner {
+  margin: 12px 10px 0; padding: 12px 14px;
+  border: 1px solid var(--rule-strong); border-inline-start: 3px solid var(--pen-red);
+  border-radius: var(--radius); background: var(--card);
+}
+.banner p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.5; }
+.banner-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.banner-actions .btn { padding: 7px 12px; font-size: 13px; }
+
+/* ---------- הדפסה ---------- */
+
+.print-only { display: none; }
+
+@media print {
+  .screen, .drawer-wrap, .sheet-wrap, .confirm-wrap { display: none !important; }
+  .print-only { display: block; }
+  html, body { background: #fff; color: #000; }
+  @page { size: A4 portrait; margin: 10mm; }
+
+  .print-head { display: flex; align-items: baseline; justify-content: space-between;
+                border-bottom: 1.5px solid #000; padding-bottom: 6px; }
+  .print-head h1 { font-family: "Instrument Serif", Georgia, serif; font-size: 20pt; margin: 0; font-weight: 400; }
+  .print-head h2 { font-size: 13pt; margin: 0; font-weight: 500; }
+  .print-narrative { font-size: 9pt; line-height: 1.6; margin: 10px 0 14px; }
+
+  .print-table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+  .print-table th, .print-table td { border: 0.5pt solid #999; padding: 2px 3px; text-align: center; }
+  .print-table th.rot { height: 70px; vertical-align: bottom; }
+  .print-table th.rot span { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+  .print-table td.wide, .print-table th.wide { text-align: start; width: 38%; }
+  .print-table tr.wk { background: #f0f0f0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-table td.mark { font-size: 9pt; }
+  .print-table tr { break-inside: avoid; }
+
+  .print-stats { list-style: none; padding: 0; margin: 12px 0 0;
+                 display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 8.5pt; }
+  .print-next { font-size: 8.5pt; margin: 8px 0 0; }
+  .print-foot { font-size: 7.5pt; color: #666; margin-top: 10px; text-align: center; }
+}
+
+.demo-tag{position:fixed;inset-block-start:0;inset-inline-end:0;z-index:99;background:var(--pen-red);color:#fff;font:12px Heebo,sans-serif;padding:3px 9px;border-end-start-radius:6px;opacity:.9}
+</style>
 </head>
 <body>
 <div id="root"><div class="boot">רגע…</div></div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-
+<div class="demo-tag">תצוגה מקדימה · כל מייל וסיסמה יעבדו</div>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
-
-<!-- הפרטים של פרויקט ה‑Firebase. ראה README. -->
-<script src="firebase-config.js?v=2.7.0"></script>
-
 <script>
-  firebase.initializeApp(FIREBASE_CONFIG);
-  /* ההתחברות חיה רק כל עוד הלשונית/האפליקציה פתוחה. סגירה = כניסה מחדש. */
-  firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
-  firebase.firestore().enablePersistence({ synchronizeTabs: true }).catch(function () {
-    /* עבודה אופליין לא זמינה בדפדפן הזה — לא קריטי */
-  });
+/* Firebase מדומה — רק לתצוגה המקדימה. שום דבר לא נשמר לשרת. */
+var __store = { "2026-09": {"habits": [{"id": "read", "name": "לקרוא"}, {"id": "train", "name": "להתאמן"}, {"id": "nosmoke", "name": "לא לעשן"}, {"id": "academy", "name": "לימודים אקדמאיים"}, {"id": "arabic", "name": "לימודי ערבית"}, {"id": "calories", "name": "צריכה קלורית"}, {"id": "coffee", "name": "קפה (עד 3)"}], "days": {"1": {"moment": "ריצה בבוקר לפני שהתחמם", "sleep": 60, "weight": 84.6, "marks": {"read": true, "train": true, "academy": true, "arabic": true, "calories": true, "coffee": true}}, "2": {"moment": "שיעור ערבית — סוף סוף נפל האסימון על השורשים", "sleep": 61, "weight": 84.6, "marks": {"read": true, "train": true, "nosmoke": true, "academy": true, "arabic": true, "calories": true}}, "3": {"moment": "קפה עם אבא", "sleep": 77, "weight": 84.4, "marks": {"read": true, "train": true, "academy": true, "calories": true, "coffee": true}}, "4": {"moment": "יום ארוך בספרייה", "sleep": 71, "weight": 84.4, "marks": {"read": true, "nosmoke": true, "academy": true, "arabic": true, "calories": true}}, "5": {"moment": "ים בערב, מים קפואים", "sleep": 73, "weight": 84.1, "marks": {"read": true, "train": true, "academy": true, "calories": true, "coffee": true}}, "6": {"moment": "ארוחה עם המשפחה", "sleep": 68, "weight": 84.1, "marks": {"read": true, "train": true, "nosmoke": true, "academy": true, "arabic": true, "calories": true, "coffee": true}}, "7": {"moment": "התאמנתי גם כשלא בא לי", "sleep": 78, "weight": 84.4, "marks": {"train": true, "nosmoke": true, "academy": true, "coffee": true}}, "8": {"moment": "פגישה שהתארכה בשעתיים", "sleep": 62, "weight": 84.5, "marks": {"read": true, "train": true, "nosmoke": true, "arabic": true, "calories": true, "coffee": true}}, "9": {"moment": "סרט גרוע, חברה טובה", "sleep": 59, "weight": 84.5, "marks": {"read": true, "calories": true, "coffee": true}}, "10": {"moment": "הלכתי לישון בעשר וחצי", "sleep": 89, "weight": 84.4, "marks": {"train": true, "nosmoke": true, "academy": true, "arabic": true, "calories": true}}}, "nextMonth": "מדיטציה, לצלצל לחבר"} };
+var __user = null, __cb = null;
+var firebase = {
+  auth: function () {
+    return {
+      onAuthStateChanged: function (cb) { __cb = cb; setTimeout(function(){ cb(__user); }, 250); return function(){}; },
+      signInWithEmailAndPassword: function (email, pw) {
+        return new Promise(function (res, rej) {
+          setTimeout(function () {
+            if (!email || pw.length < 4) { rej({ code: "auth/invalid-credential" }); return; }
+            __user = { uid: "demo" }; if (__cb) __cb(__user); res({});
+          }, 500);
+        });
+      },
+      signOut: function () { __user = null; if (__cb) __cb(null); return Promise.resolve(); }
+    };
+  },
+  firestore: function () {
+    function doc(key) {
+      return {
+        get: function () {
+          return Promise.resolve({ exists: !!__store[key], data: function () { return __store[key]; } });
+        },
+        set: function (v) { __store[key] = v; return Promise.resolve(); }
+      };
+    }
+    return { collection: function () { return { doc: function () { return { collection: function () { return { doc: doc }; } }; } }; } };
+  }
+};
 </script>
+<script>/* ==========================================================================
+   logic.js — כל הלוגיקה הטהורה של הטראקר.
+   הקובץ הזה לא מכיר את React ולא את Firebase, ולכן אפשר לבדוק אותו
+   בבדיקות אוטומטיות (tests/logic.test.js).
+   ========================================================================== */
+var HT = (function () {
+  "use strict";
 
-<script src="logic.js?v=2.7.0"></script>
-<script src="app.js?v=2.7.0"></script>
+  var HEB_MONTHS = [
+    "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
+    "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"
+  ];
+
+  var DEFAULT_HABITS = [
+    { id: "read", name: "לקרוא" },
+    { id: "train", name: "להתאמן" },
+    { id: "nosmoke", name: "לא לעשן" },
+    { id: "academy", name: "לימודים אקדמאיים" },
+    { id: "arabic", name: "לימודי ערבית" },
+    { id: "calories", name: "צריכה קלורית" },
+    { id: "coffee", name: "קפה (עד 3)" }
+  ];
+
+  var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
+
+  var VERSION = "3.0.0";
+  var CREDIT = "Emanuel Nassimiha 2026";
+
+  /* ---------- תאריכים ---------- */
+
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+
+  function monthKey(year, month) { return year + "-" + pad2(month); }
+
+  function parseMonthKey(key) {
+    var parts = String(key).split("-");
+    return { year: parseInt(parts[0], 10), month: parseInt(parts[1], 10) };
+  }
+
+  function daysInMonth(year, month) {
+    return new Date(year, month, 0).getDate();
+  }
+
+  function daysInMonthKey(key) {
+    var p = parseMonthKey(key);
+    return daysInMonth(p.year, p.month);
+  }
+
+  function monthLabel(key) {
+    var p = parseMonthKey(key);
+    return HEB_MONTHS[p.month - 1] + " " + p.year;
+  }
+
+  function shiftMonth(key, delta) {
+    var p = parseMonthKey(key);
+    var m = p.month - 1 + delta;
+    var y = p.year + Math.floor(m / 12);
+    m = ((m % 12) + 12) % 12;
+    return monthKey(y, m + 1);
+  }
+
+  function canGoBack(key) { return key > FIRST_MONTH; }
+
+  /** כל מפתחות החודשים מ-from עד to, כולל */
+  function monthRange(from, to) {
+    var out = [], cur = from;
+    var guard = 0;
+    while (cur <= to && guard < 600) { out.push(cur); cur = shiftMonth(cur, 1); guard++; }
+    return out;
+  }
+
+  function todayParts(now) {
+    var d = now || new Date();
+    return { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() };
+  }
+
+  function currentMonthKey(now) {
+    var t = todayParts(now);
+    var key = monthKey(t.year, t.month);
+    return key < FIRST_MONTH ? FIRST_MONTH : key;
+  }
+
+  /* ---------- מבנה הנתונים של חודש ---------- */
+  /* { habits: [{id,name}], days: { "1": {moment, sleep, weight, marks:{id:true}} }, nextMonth: "" } */
+
+  function emptyMonth(habits) {
+    return {
+      habits: (habits && habits.length ? habits : DEFAULT_HABITS).map(function (h) {
+        return { id: h.id, name: h.name };
+      }),
+      days: {},
+      nextMonth: ""
+    };
+  }
+
+  function numOrNull(v) {
+    if (v === "" || v === null || v === undefined) return null;
+    var n = typeof v === "string" ? Number(v.replace(",", ".").trim()) : Number(v);
+    return isFinite(n) ? n : null;
+  }
+
+  /** מנקה מסמך שהגיע מ‑Firestore ומוודא שיש לו את כל השדות */
+  function normalizeMonth(raw, fallbackHabits) {
+    var base = emptyMonth(fallbackHabits);
+    if (!raw || typeof raw !== "object") return base;
+
+    var habits = Array.isArray(raw.habits) && raw.habits.length
+      ? raw.habits
+          .filter(function (h) { return h && h.id; })
+          .map(function (h) { return { id: String(h.id), name: String(h.name || "ללא שם") }; })
+      : base.habits;
+
+    var ids = {};
+    habits.forEach(function (h) { ids[h.id] = true; });
+
+    var days = {};
+    var rawDays = raw.days && typeof raw.days === "object" ? raw.days : {};
+    Object.keys(rawDays).forEach(function (k) {
+      var d = rawDays[k] || {};
+      var marks = {};
+      var rawMarks = d.marks && typeof d.marks === "object" ? d.marks : {};
+      Object.keys(rawMarks).forEach(function (id) {
+        if (rawMarks[id] && ids[id]) marks[id] = true; // מתעלמים מסימונים של נושא שנמחק
+      });
+      days[String(k)] = {
+        moment: typeof d.moment === "string" ? d.moment : "",
+        sleep: numOrNull(d.sleep),
+        weight: numOrNull(d.weight),
+        marks: marks
+      };
+    });
+
+    return {
+      habits: habits,
+      days: days,
+      nextMonth: typeof raw.nextMonth === "string" ? raw.nextMonth : ""
+    };
+  }
+
+  function getDay(month, day) {
+    if (!month || !month.days) return { moment: "", sleep: null, weight: null, marks: {} };
+    var d = month.days[String(day)];
+    return d || { moment: "", sleep: null, weight: null, marks: {} };
+  }
+
+  /* ---------- עדכונים (מחזירים אובייקט חדש, בלי לשנות את הקיים) ---------- */
+
+  function withDay(month, day, patch) {
+    var key = String(day);
+    var current = getDay(month, day);
+    var next = {
+      moment: patch.moment !== undefined ? patch.moment : current.moment,
+      sleep: patch.sleep !== undefined ? numOrNull(patch.sleep) : current.sleep,
+      weight: patch.weight !== undefined ? numOrNull(patch.weight) : current.weight,
+      marks: patch.marks !== undefined ? patch.marks : current.marks
+    };
+    var days = {};
+    Object.keys(month.days).forEach(function (k) { days[k] = month.days[k]; });
+    days[key] = next;
+    return { habits: month.habits, days: days, nextMonth: month.nextMonth };
+  }
+
+  function toggleMark(month, day, habitId) {
+    var current = getDay(month, day);
+    var marks = {};
+    Object.keys(current.marks).forEach(function (k) { marks[k] = true; });
+    if (marks[habitId]) delete marks[habitId];
+    else marks[habitId] = true;
+    return withDay(month, day, { marks: marks });
+  }
+
+  function isMarked(month, day, habitId) {
+    return !!getDay(month, day).marks[habitId];
+  }
+
+  /** מנקה יום שלם: רגע, שינה, משקל וכל הסימונים */
+  function clearDay(month, day) {
+    var days = {};
+    Object.keys(month.days).forEach(function (k) { if (k !== String(day)) days[k] = month.days[k]; });
+    return { habits: month.habits, days: days, nextMonth: month.nextMonth };
+  }
+
+  /** מדליק או מכבה נושא על טווח ימים רצוף */
+  function setRange(month, habitId, from, to, on) {
+    var lo = Math.min(from, to), hi = Math.max(from, to);
+    var next = month;
+    for (var d = lo; d <= hi; d++) {
+      if (isMarked(next, d, habitId) !== !!on) next = toggleMark(next, d, habitId);
+    }
+    return next;
+  }
+
+  /** פריטים מהערת "לחודש הבא" שעדיין אינם נושאים בחודש הנוכחי */
+  function nextMonthItems(note, habits) {
+    if (!note) return [];
+    var taken = {};
+    (habits || []).forEach(function (h) { taken[h.name.trim()] = true; });
+    return note.split(/[,\n]/)
+      .map(function (x) { return x.trim(); })
+      .filter(function (x) { return x.length > 0 && x.length <= 40 && !taken[x]; });
+  }
+
+  function newHabitId(existing) {
+    var taken = {};
+    (existing || []).forEach(function (h) { taken[h.id] = true; });
+    var i = 1;
+    var id;
+    do { id = "h" + i; i++; } while (taken[id]);
+    return id;
+  }
+
+  function addHabit(month, name) {
+    var habit = { id: newHabitId(month.habits), name: name || "נושא חדש" };
+    return { habits: month.habits.concat([habit]), days: month.days, nextMonth: month.nextMonth };
+  }
+
+  function renameHabit(month, habitId, name) {
+    return {
+      habits: month.habits.map(function (h) {
+        return h.id === habitId ? { id: h.id, name: name } : h;
+      }),
+      days: month.days,
+      nextMonth: month.nextMonth
+    };
+  }
+
+  /** מחיקת נושא מוחקת גם את כל הסימונים שלו בחודש הזה בלבד */
+  function removeHabit(month, habitId) {
+    var days = {};
+    Object.keys(month.days).forEach(function (k) {
+      var d = month.days[k];
+      var marks = {};
+      Object.keys(d.marks).forEach(function (id) { if (id !== habitId) marks[id] = true; });
+      days[k] = { moment: d.moment, sleep: d.sleep, weight: d.weight, marks: marks };
+    });
+    return {
+      habits: month.habits.filter(function (h) { return h.id !== habitId; }),
+      days: days,
+      nextMonth: month.nextMonth
+    };
+  }
+
+  function moveHabit(month, habitId, delta) {
+    var list = month.habits.slice();
+    var i = list.findIndex(function (h) { return h.id === habitId; });
+    var j = i + delta;
+    if (i < 0 || j < 0 || j >= list.length) return month;
+    var tmp = list[i]; list[i] = list[j]; list[j] = tmp;
+    return { habits: list, days: month.days, nextMonth: month.nextMonth };
+  }
+
+  /* ---------- סטטיסטיקה ---------- */
+
+  function longestStreak(flags) {
+    var best = 0, run = 0;
+    for (var i = 0; i < flags.length; i++) {
+      if (flags[i]) { run++; if (run > best) best = run; }
+      else run = 0;
+    }
+    return best;
+  }
+
+  function currentStreak(flags, upTo) {
+    var end = (upTo === undefined ? flags.length : upTo) - 1;
+    var run = 0;
+    for (var i = end; i >= 0; i--) {
+      if (flags[i]) run++;
+      else break;
+    }
+    return run;
+  }
+
+  /** עד איזה יום סופרים: החודש הנוכחי נספר עד היום, חודש שעבר עד סופו */
+  function countedDays(monthKeyStr, now) {
+    var total = daysInMonthKey(monthKeyStr);
+    var t = todayParts(now);
+    if (monthKey(t.year, t.month) === monthKeyStr) return Math.min(t.day, total);
+    if (monthKeyStr > monthKey(t.year, t.month)) return 0;
+    return total;
+  }
+
+  function habitStats(month, monthKeyStr, now) {
+    var total = daysInMonthKey(monthKeyStr);
+    var counted = countedDays(monthKeyStr, now);
+    return month.habits.map(function (h) {
+      var flags = [];
+      for (var d = 1; d <= total; d++) flags.push(isMarked(month, d, h.id));
+      var done = 0;
+      for (var i = 0; i < counted; i++) if (flags[i]) done++;
+      return {
+        id: h.id,
+        name: h.name,
+        done: done,
+        counted: counted,
+        percent: counted ? Math.round((done / counted) * 100) : 0,
+        best: longestStreak(flags),
+        current: currentStreak(flags, counted)
+      };
+    });
+  }
+
+  /* ---------- גרפים ---------- */
+
+  /** מחזיר רשימת ערכים לפי יום, כולל ימים ריקים (null) — כדי שהקו יישבר */
+  function series(month, field, monthKeyStr) {
+    var total = daysInMonthKey(monthKeyStr);
+    var out = [];
+    for (var d = 1; d <= total; d++) {
+      var v = getDay(month, d)[field];
+      out.push({ day: d, value: (v === null || v === undefined) ? null : Number(v) });
+    }
+    return out;
+  }
+
+  /** חותך את הסדרה לקטעים רציפים — כל קטע הוא קו נפרד בגרף */
+  function segments(points) {
+    var segs = [], cur = [];
+    points.forEach(function (p) {
+      if (p.value === null) {
+        if (cur.length) segs.push(cur);
+        cur = [];
+      } else {
+        cur.push(p);
+      }
+    });
+    if (cur.length) segs.push(cur);
+    return segs;
+  }
+
+  /** תחום גרף המשקל: תמיד עד הכפולה של 5 הקרובה כלפי חוץ (67→65, 73→75) */
+  function weightBounds(points) {
+    var vals = points.filter(function (p) { return p.value !== null; })
+                     .map(function (p) { return p.value; });
+    if (!vals.length) return { min: 70, max: 75, empty: true };
+    var lo = Math.min.apply(null, vals);
+    var hi = Math.max.apply(null, vals);
+    var min = Math.floor(lo / 5) * 5;
+    var max = Math.ceil(hi / 5) * 5;
+    if (max - min < 5) max = min + 5;
+    return { min: min, max: max, empty: false };
+  }
+
+  /** תוויות המשקל: קילו שלם כשאפשר, ואחרת הקפיצה הקטנה ביותר שעדיין נקראת */
+  function weightLabels(min, max) {
+    var range = max - min;
+    var steps = [1, 2, 5, 10, 25, 50];
+    var step = steps[steps.length - 1];
+    for (var i = 0; i < steps.length; i++) {
+      var count = range / steps[i] + 1;
+      if (Math.abs(count - Math.round(count)) < 1e-9 && count <= 6) { step = steps[i]; break; }
+    }
+    var out = [];
+    for (var v = max; v >= min - 1e-9; v -= step) out.push(Math.round(v * 10) / 10);
+    return out;
+  }
+
+  /** תוויות לסרגל הגרף, מהערך הגבוה לנמוך (סדר התצוגה משמאל לימין) */
+  function scaleLabels(min, max, count) {
+    var n = Math.max(2, count || 5);
+    var step = (max - min) / (n - 1);
+    var out = [];
+    for (var i = 0; i < n; i++) {
+      var v = max - step * i;
+      out.push(Math.abs(step) >= 5 ? Math.round(v) : Math.round(v * 10) / 10);
+    }
+    return out;
+  }
+
+  function avg(list) {
+    var sum = 0;
+    for (var i = 0; i < list.length; i++) sum += list[i];
+    return sum / list.length;
+  }
+
+  /** שורות תובנה על החודש. מחזיר רק מה שיש מספיק נתונים כדי לומר. */
+  function insights(month, monthKeyStr, now) {
+    var out = [];
+    var counted = countedDays(monthKeyStr, now);
+    var d, v;
+
+    var sleeps = [];
+    for (d = 1; d <= counted; d++) {
+      v = getDay(month, d).sleep;
+      if (v !== null) sleeps.push({ day: d, value: v });
+    }
+    if (sleeps.length >= 3) {
+      out.push("ממוצע ציון השינה החודש: " + Math.round(avg(sleeps.map(function (s) { return s.value; }))) + ".");
+    }
+
+    var best = null;
+    month.habits.forEach(function (h) {
+      var on = [], off = [];
+      sleeps.forEach(function (s) {
+        (isMarked(month, s.day, h.id) ? on : off).push(s.value);
+      });
+      if (on.length >= 3 && off.length >= 3) {
+        var diff = avg(on) - avg(off);
+        if (!best || Math.abs(diff) > Math.abs(best.diff)) {
+          best = { name: h.name, diff: diff, on: avg(on), off: avg(off) };
+        }
+      }
+    });
+    if (best && Math.abs(best.diff) >= 3) {
+      out.push("בימים שסימנת “" + best.name + "” ציון השינה " +
+               (best.diff > 0 ? "גבוה" : "נמוך") + " ב-" + Math.round(Math.abs(best.diff)) +
+               " נקודות (" + Math.round(best.on) + " מול " + Math.round(best.off) + ").");
+    }
+
+    var ws = [];
+    for (d = 1; d <= counted; d++) {
+      v = getDay(month, d).weight;
+      if (v !== null) ws.push({ day: d, value: v });
+    }
+    if (ws.length >= 2) {
+      var delta = ws[ws.length - 1].value - ws[0].value;
+      var r = Math.round(Math.abs(delta) * 10) / 10;
+      out.push(r === 0
+        ? "המשקל יציב מאז ה-" + ws[0].day + " בחודש."
+        : "המשקל " + (delta < 0 ? "ירד" : "עלה") + " ב-" + r + ' ק"ג מאז ה-' + ws[0].day + " בחודש.");
+    }
+
+    var top = null;
+    habitStats(month, monthKeyStr, now).forEach(function (st) {
+      if (!top || st.current > top.current) top = st;
+    });
+    if (top && top.current >= 3) {
+      out.push("רצף פעיל: " + top.current + " ימים ברציפות ב“" + top.name + "”.");
+    }
+
+    return out;
+  }
+
+  /** סיכום חודשי במלל: הרגלים, שינה ומשקל בכמה משפטים */
+  function monthNarrative(month, monthKeyStr, now) {
+    var counted = countedDays(monthKeyStr, now);
+    if (!counted) return "";
+    var stats = habitStats(month, monthKeyStr, now);
+    var parts = [];
+    var label = monthLabel(monthKeyStr);
+    var d, v;
+
+    if (stats.length) {
+      var done = 0, possible = 0;
+      stats.forEach(function (st) { done += st.done; possible += st.counted; });
+      var pct = possible ? Math.round((done / possible) * 100) : 0;
+      var sorted = stats.slice().sort(function (x, y) { return y.percent - x.percent; });
+      var top = sorted[0], low = sorted[sorted.length - 1];
+      var head = "ב" + label + " עמדת ב-" + pct + "% מהסימונים האפשריים, על פני " +
+                 counted + " ימים ו-" + stats.length + " נושאים.";
+      if (top.percent === 0) {
+        head += " עוד לא סימנת כלום החודש.";
+      } else if (stats.length > 1 && top.percent !== low.percent) {
+        head += " הכי חזק: “" + top.name + "” עם " + top.percent + "%" +
+                (top.best >= 3 ? " ורצף של " + top.best + " ימים" : "") +
+                ". הכי חלש: “" + low.name + "” עם " + low.percent + "%.";
+      }
+      parts.push(head);
+    }
+
+    var sleeps = [];
+    for (d = 1; d <= counted; d++) { v = getDay(month, d).sleep; if (v !== null) sleeps.push({ day: d, value: v }); }
+    if (sleeps.length >= 3) {
+      var mid = Math.ceil(counted / 2);
+      var first = sleeps.filter(function (x) { return x.day <= mid; }).map(function (x) { return x.value; });
+      var second = sleeps.filter(function (x) { return x.day > mid; }).map(function (x) { return x.value; });
+      var sentence = "ממוצע השינה עמד על " + Math.round(avg(sleeps.map(function (x) { return x.value; }))) +
+                     " לאורך " + sleeps.length + " לילות שנרשמו";
+      if (first.length >= 2 && second.length >= 2) {
+        var gap = Math.round(avg(second) - avg(first));
+        sentence += Math.abs(gap) < 3
+          ? ", יציב בין תחילת החודש לסופו."
+          : (gap > 0 ? ", והשתפר ב-" + gap + " נקודות במחצית השנייה."
+                     : ", וירד ב-" + Math.abs(gap) + " נקודות במחצית השנייה.");
+      } else { sentence += "."; }
+      var lo2 = sleeps.slice().sort(function (x, y) { return x.value - y.value; })[0];
+      var hi2 = sleeps.slice().sort(function (x, y) { return y.value - x.value; })[0];
+      sentence += " הלילה הטוב ביותר היה ה-" + hi2.day + " (" + hi2.value + ") והגרוע ה-" + lo2.day + " (" + lo2.value + ").";
+      parts.push(sentence);
+    } else if (sleeps.length) {
+      parts.push("נרשמו רק " + sleeps.length + " ציוני שינה החודש, מעט מכדי להסיק מהם מגמה.");
+    }
+
+    var ws = [];
+    for (d = 1; d <= counted; d++) { v = getDay(month, d).weight; if (v !== null) ws.push({ day: d, value: v }); }
+    if (ws.length >= 2) {
+      var delta = Math.round((ws[ws.length - 1].value - ws[0].value) * 10) / 10;
+      var wsent = "המשקל נמדד " + ws.length + " פעמים, מ-" + ws[0].value + " ביום " + ws[0].day +
+                  " ועד " + ws[ws.length - 1].value + " ביום " + ws[ws.length - 1].day;
+      wsent += delta === 0 ? " — בלי שינוי נטו."
+             : (delta < 0 ? " — ירידה של " + Math.abs(delta) + ' ק"ג.' : " — עלייה של " + delta + ' ק"ג.');
+      parts.push(wsent);
+    }
+
+    var moments = 0;
+    for (d = 1; d <= counted; d++) if (getDay(month, d).moment) moments++;
+    if (moments) parts.push("רשמת רגע זכור ב-" + moments + " מתוך " + counted + " הימים.");
+
+    return parts.join(" ");
+  }
+
+  function shortMonthLabel(key) {
+    var pp = parseMonthKey(key);
+    return HEB_MONTHS[pp.month - 1].slice(0, 3) + " " + String(pp.year).slice(2);
+  }
+
+  /** האם עבר זמן ההמתנה מאז הפעילות האחרונה. חותמת חסרה נחשבת פגה. */
+  function idleExpired(lastActive, nowMs, idleMs) {
+    if (!lastActive) return true;
+    return nowMs - lastActive > idleMs;
+  }
+
+  /** ימים שכבר עברו ואין בהם ציון שינה */
+  function missingSleepDays(month, monthKeyStr, now) {
+    if (!month) return [];
+    var counted = countedDays(monthKeyStr, now);
+    var out = [];
+    for (var d = 1; d <= counted; d++) {
+      if (getDay(month, d).sleep === null) out.push(d);
+    }
+    return out;
+  }
+
+  function dayOfWeekLetter(monthKeyStr, day) {
+    var p = parseMonthKey(monthKeyStr);
+    var idx = new Date(p.year, p.month - 1, day).getDay();
+    return ["א", "ב", "ג", "ד", "ה", "ו", "ש"][idx];
+  }
+
+  function isWeekend(monthKeyStr, day) {
+    var p = parseMonthKey(monthKeyStr);
+    var idx = new Date(p.year, p.month - 1, day).getDay();
+    return idx === 5 || idx === 6;
+  }
+
+  return {
+    VERSION: VERSION,
+    CREDIT: CREDIT,
+    HEB_MONTHS: HEB_MONTHS,
+    DEFAULT_HABITS: DEFAULT_HABITS,
+    FIRST_MONTH: FIRST_MONTH,
+    pad2: pad2,
+    monthKey: monthKey,
+    parseMonthKey: parseMonthKey,
+    daysInMonth: daysInMonth,
+    daysInMonthKey: daysInMonthKey,
+    monthLabel: monthLabel,
+    shiftMonth: shiftMonth,
+    canGoBack: canGoBack,
+    monthRange: monthRange,
+    todayParts: todayParts,
+    currentMonthKey: currentMonthKey,
+    emptyMonth: emptyMonth,
+    numOrNull: numOrNull,
+    normalizeMonth: normalizeMonth,
+    getDay: getDay,
+    withDay: withDay,
+    toggleMark: toggleMark,
+    isMarked: isMarked,
+    newHabitId: newHabitId,
+    addHabit: addHabit,
+    renameHabit: renameHabit,
+    removeHabit: removeHabit,
+    moveHabit: moveHabit,
+    longestStreak: longestStreak,
+    currentStreak: currentStreak,
+    countedDays: countedDays,
+    habitStats: habitStats,
+    insights: insights,
+    monthNarrative: monthNarrative,
+    clearDay: clearDay,
+    setRange: setRange,
+    nextMonthItems: nextMonthItems,
+    idleExpired: idleExpired,
+    shortMonthLabel: shortMonthLabel,
+    series: series,
+    segments: segments,
+    weightBounds: weightBounds,
+    scaleLabels: scaleLabels,
+    weightLabels: weightLabels,
+    missingSleepDays: missingSleepDays,
+    dayOfWeekLetter: dayOfWeekLetter,
+    isWeekend: isWeekend
+  };
+})();
+
+if (typeof module !== "undefined" && module.exports) module.exports = HT;
+</script>
+<script>"use strict";
+/* ==========================================================================
+   app.jsx — ממשק הטראקר. React 18 מ‑CDN, בלי Babel בדפדפן.
+   הכל בזרימה רגילה של הדף: אין sticky ואין גלילה מקוננת, כדי שזום לא יזיז כלום.
+   ========================================================================== */
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
+function monthRef(uid, key) {
+    return firebase.firestore()
+        .collection("users").doc(uid)
+        .collection("habitMonths").doc(key);
+}
+/* ---------- רכיבים קטנים ---------- */
+function XMark({ seed }) {
+    const tilt = ((seed * 13) % 9) - 4;
+    return (React.createElement("svg", { className: "x", viewBox: "0 0 24 24", style: { transform: `rotate(${tilt}deg)` }, "aria-hidden": "true" },
+        React.createElement("path", { d: "M5 4.5 L19 19.5" }),
+        React.createElement("path", { d: "M19 4.8 L4.8 19.2" })));
+}
+function Chevron({ dir }) {
+    /* dir: "right" ‏= אחורה בעברית, "left" = קדימה. SVG לא מתהפך ב-RTL. */
+    return (React.createElement("svg", { viewBox: "0 0 24 24", className: "chev-ico", "aria-hidden": "true" },
+        React.createElement("path", { d: dir === "right" ? "M9 5l7 7-7 7" : "M15 5l-7 7 7 7" })));
+}
+function MenuIcon() {
+    return (React.createElement("svg", { viewBox: "0 0 24 24", className: "ico", "aria-hidden": "true" },
+        React.createElement("path", { d: "M4 7h16M4 12h16M4 17h16" })));
+}
+/** גרף אנכי: הימים יורדים, הערך נמדד לרוחב. הצד הימני = הערך הנמוך. */
+function VerticalGraph({ points, min, max, width, rowH, headH, color, label, unit, labels, monthKey, today }) {
+    const COLS = 10; // הרוחב מחולק לעשר משבצות שוות
+    const cell = width / COLS;
+    const total = points.length;
+    const height = total * rowH;
+    /* הערך ממופה למרכז המשבצת, כך שנקודה בקצה יושבת בתוך משבצת ולא על הקו */
+    const x = (v) => (width - cell / 2) - ((v - min) / (max - min)) * (width - cell);
+    const y = (day) => (day - 0.5) * rowH;
+    const segs = HT.segments(points);
+    const cols = [];
+    for (let i = 0; i <= COLS; i++) {
+        cols.push(Math.min(Math.max(i * cell, 0.5), width - 0.5));
+    }
+    return (React.createElement("div", { className: "graph", style: { width: width + "px" } },
+        React.createElement("div", { className: "graph-head", style: { height: headH + "px" } },
+            React.createElement("span", { className: "graph-title" },
+                label,
+                " ",
+                React.createElement("i", null, unit)),
+            React.createElement("span", { className: "graph-axis", dir: "ltr", style: { paddingInline: cell / 2 + "px" } }, (labels || HT.scaleLabels(min, max, 6)).map((v, i) => React.createElement("b", { key: i }, v)))),
+        React.createElement("svg", { width: width, height: height, className: "graph-svg", role: "img", "aria-label": label },
+            monthKey ? points.filter((p) => HT.isWeekend(monthKey, p.day)).map((p) => (React.createElement("rect", { key: "w" + p.day, x: "0", y: (p.day - 1) * rowH, width: width, height: rowH, className: "row-weekend" }))) : null,
+            monthKey && today > 0 ? (React.createElement("rect", { x: "0.75", y: (today - 1) * rowH + 0.75, width: width - 1.5, height: rowH - 1.5, className: "row-today" })) : null,
+            cols.map((cx, i) => (React.createElement("line", { key: "c" + i, x1: cx, x2: cx, y1: "0", y2: height, className: i % 5 === 0 ? "tick major" : "tick" }))),
+            points.map((p, i) => (React.createElement("line", { key: "r" + i, x1: "0", x2: width, y1: i * rowH, y2: i * rowH, className: "tick row" }))),
+            segs.map((seg, i) => (React.createElement("polyline", { key: "s" + i, className: "line", stroke: color, points: seg.map((p) => `${x(p.value)},${y(p.day)}`).join(" ") }))),
+            points.filter((p) => p.value !== null).map((p) => (React.createElement("circle", { key: "d" + p.day, cx: x(p.value), cy: y(p.day), r: "2.6", fill: color }))))));
+}
+/* ---------- מסך כניסה ---------- */
+function LoginScreen() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState("");
+    const [note, setNote] = useState("");
+    const reset = async () => {
+        if (!email.trim()) {
+            setError("תזין קודם את המייל, ואשלח אליו קישור לאיפוס.");
+            return;
+        }
+        setError("");
+        setNote("");
+        try {
+            await firebase.auth().sendPasswordResetEmail(email.trim());
+            setNote("שלחתי קישור לאיפוס סיסמה ל" + email.trim() + ". בדוק גם בספאם.");
+        }
+        catch (e) {
+            setError(e.code === "auth/invalid-email" ? "כתובת המייל לא תקינה." : "שליחת האיפוס נכשלה.");
+        }
+    };
+    const submit = async () => {
+        if (!email || !password) {
+            setError("צריך מייל וסיסמה.");
+            return;
+        }
+        setBusy(true);
+        setError("");
+        try {
+            try {
+                localStorage.setItem("ht-last-active", String(Date.now()));
+            }
+            catch (e) { }
+            await firebase.auth().signInWithEmailAndPassword(email.trim(), password);
+        }
+        catch (e) {
+            const map = {
+                "auth/invalid-email": "כתובת המייל לא תקינה.",
+                "auth/user-not-found": "אין חשבון עם המייל הזה.",
+                "auth/wrong-password": "הסיסמה שגויה.",
+                "auth/invalid-credential": "המייל או הסיסמה שגויים.",
+                "auth/too-many-requests": "יותר מדי ניסיונות. נסה שוב בעוד כמה דקות.",
+                "auth/network-request-failed": "אין חיבור לרשת."
+            };
+            setError(map[e.code] || "ההתחברות נכשלה. נסה שוב.");
+            setBusy(false);
+        }
+    };
+    return (React.createElement("div", { className: "login" },
+        React.createElement("div", { className: "login-card" },
+            React.createElement("h1", { className: "logo" }, "Log"),
+            React.createElement("p", { className: "login-sub" }, "\u05D4\u05DE\u05D7\u05D1\u05E8\u05EA, \u05D1\u05DC\u05D9 \u05D4\u05DE\u05D7\u05D1\u05E8\u05EA."),
+            React.createElement("label", { className: "field" },
+                React.createElement("span", null, "\u05DE\u05D9\u05D9\u05DC"),
+                React.createElement("input", { type: "email", dir: "ltr", autoComplete: "email", value: email, onChange: (e) => setEmail(e.target.value), onKeyDown: (e) => e.key === "Enter" && submit() })),
+            React.createElement("label", { className: "field" },
+                React.createElement("span", null, "\u05E1\u05D9\u05E1\u05DE\u05D4"),
+                React.createElement("input", { type: "password", dir: "ltr", autoComplete: "current-password", value: password, onChange: (e) => setPassword(e.target.value), onKeyDown: (e) => e.key === "Enter" && submit() })),
+            error ? React.createElement("p", { className: "login-error" }, error) : null,
+            note ? React.createElement("p", { className: "login-note" }, note) : null,
+            React.createElement("button", { className: "btn primary", onClick: submit, disabled: busy }, busy ? "מתחבר…" : "כניסה"),
+            React.createElement("button", { className: "linky", onClick: reset }, "\u05E9\u05DB\u05D7\u05EA\u05D9 \u05E1\u05D9\u05E1\u05DE\u05D4"),
+            React.createElement("p", { className: "credit", dir: "ltr" },
+                "v",
+                HT.VERSION,
+                " \u00B7 ",
+                HT.CREDIT))));
+}
+/* ---------- באנר עליון ותפריט ---------- */
+function Section({ title, children, defaultOpen }) {
+    const [open, setOpen] = useState(!!defaultOpen);
+    return (React.createElement("div", { className: "section" + (open ? " open" : "") },
+        React.createElement("button", { className: "section-head", onClick: () => setOpen(!open), "aria-expanded": open },
+            React.createElement("span", null, title),
+            React.createElement("i", { className: "chev", "aria-hidden": "true" }, "\u2304")),
+        open ? React.createElement("div", { className: "section-body" }, children) : null));
+}
+function PlusIcon() {
+    return (React.createElement("svg", { viewBox: "0 0 24 24", className: "ico", "aria-hidden": "true" },
+        React.createElement("path", { d: "M12 5v14M5 12h14" })));
+}
+function TopBar({ onMenu }) {
+    return (React.createElement("header", { className: "topbar" },
+        React.createElement("div", { className: "topbar-actions" },
+            React.createElement("button", { onClick: onMenu, "aria-label": "\u05E4\u05EA\u05D7 \u05EA\u05E4\u05E8\u05D9\u05D8" },
+                React.createElement(MenuIcon, null))),
+        React.createElement("h1", { className: "brand", dir: "ltr" },
+            React.createElement("span", { className: "brand-log" }, "Log"),
+            React.createElement("span", { className: "brand-rest" }, "- habit tracker"))));
+}
+function AddButton({ onClick, alert, title }) {
+    return (React.createElement("button", { className: "add-btn" + (alert ? " has-alert" : ""), onClick: onClick, title: title, "aria-label": title || "הזנה מהירה ליום" },
+        React.createElement(PlusIcon, null),
+        alert ? React.createElement("span", { className: "badge", "aria-hidden": "true" }) : null));
+}
+function SummaryBrowser({ month, monthKey, now, uid }) {
+    const [selected, setSelected] = useState(monthKey);
+    const [data, setData] = useState(month);
+    const [loading, setLoading] = useState(false);
+    const months = HT.monthRange(HT.FIRST_MONTH, monthKey > HT.currentMonthKey(now) ? monthKey : HT.currentMonthKey(now));
+    useEffect(() => {
+        if (selected === monthKey) {
+            setData(month);
+            setLoading(false);
+            return;
+        }
+        let cancelled = false;
+        setLoading(true);
+        monthRef(uid, selected).get().then((snap) => {
+            if (cancelled)
+                return;
+            setData(snap.exists ? HT.normalizeMonth(snap.data()) : null);
+            setLoading(false);
+        }).catch(() => { if (!cancelled) {
+            setData(null);
+            setLoading(false);
+        } });
+        return () => { cancelled = true; };
+    }, [selected, monthKey, month, uid]);
+    return (React.createElement("div", { className: "browser" },
+        React.createElement("select", { className: "month-select", value: selected, onChange: (e) => setSelected(e.target.value), "aria-label": "\u05D1\u05D7\u05E8 \u05D7\u05D5\u05D3\u05E9" }, months.slice().reverse().map((k) => (React.createElement("option", { key: k, value: k }, HT.monthLabel(k))))),
+        loading
+            ? React.createElement("p", { className: "hint" }, "\u05D8\u05D5\u05E2\u05DF\u2026")
+            : data
+                ? React.createElement(Summary, { month: data, monthKey: selected, now: now, bare: true })
+                : React.createElement("p", { className: "hint" }, "\u05D0\u05D9\u05DF \u05E0\u05EA\u05D5\u05E0\u05D9\u05DD \u05DC\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D6\u05D4.")));
+}
+function YearGrid({ uid, monthKey, month, now }) {
+    const [rows, setRows] = useState(null);
+    const habits = month.habits;
+    const months = HT.monthRange(HT.FIRST_MONTH, monthKey > HT.currentMonthKey(now) ? monthKey : HT.currentMonthKey(now));
+    useEffect(() => {
+        let cancelled = false;
+        Promise.all(months.map((k) => k === monthKey
+            ? Promise.resolve({ key: k, data: month })
+            : monthRef(uid, k).get()
+                .then((snap) => ({ key: k, data: snap.exists ? HT.normalizeMonth(snap.data()) : null }))
+                .catch(() => ({ key: k, data: null })))).then((all) => {
+            if (cancelled)
+                return;
+            setRows(all.map((r) => ({
+                key: r.key,
+                stats: r.data ? HT.habitStats(r.data, r.key, now) : null
+            })));
+        });
+        return () => { cancelled = true; };
+    }, [uid, monthKey, month]);
+    if (!rows)
+        return React.createElement("p", { className: "hint" }, "\u05D8\u05D5\u05E2\u05DF\u2026");
+    return (React.createElement("div", { className: "year" },
+        React.createElement("div", { className: "year-row year-head" },
+            React.createElement("span", { className: "year-label" }),
+            habits.map((h) => (React.createElement("span", { className: "year-cell head", key: h.id, title: h.name }, h.name.slice(0, 2))))),
+        rows.slice().reverse().map((r) => (React.createElement("div", { className: "year-row", key: r.key },
+            React.createElement("span", { className: "year-label" }, HT.shortMonthLabel(r.key)),
+            habits.map((h) => {
+                const st = r.stats ? r.stats.filter((x) => x.id === h.id)[0] : null;
+                return (React.createElement("span", { className: "year-cell", key: h.id, title: st ? h.name + ": " + st.percent + "%" : "אין נתונים" }, st ? React.createElement("i", { style: { opacity: 0.12 + 0.88 * (st.percent / 100) } }) : null));
+            })))),
+        React.createElement("p", { className: "hint" }, "\u05DB\u05DB\u05DC \u05E9\u05D4\u05DE\u05E9\u05D1\u05E6\u05EA \u05DB\u05D4\u05D4 \u05D9\u05D5\u05EA\u05E8, \u05DB\u05DA \u05D4\u05D0\u05D7\u05D5\u05D6 \u05D1\u05D0\u05D5\u05EA\u05D5 \u05D7\u05D5\u05D3\u05E9 \u05D2\u05D1\u05D5\u05D4 \u05D9\u05D5\u05EA\u05E8.")));
+}
+function MomentSearch({ uid, monthKey, month, now, onGo }) {
+    const [query, setQuery] = useState("");
+    const [all, setAll] = useState(null);
+    const months = HT.monthRange(HT.FIRST_MONTH, monthKey > HT.currentMonthKey(now) ? monthKey : HT.currentMonthKey(now));
+    useEffect(() => {
+        let cancelled = false;
+        Promise.all(months.map((k) => k === monthKey
+            ? Promise.resolve({ key: k, data: month })
+            : monthRef(uid, k).get()
+                .then((snap) => ({ key: k, data: snap.exists ? HT.normalizeMonth(snap.data()) : null }))
+                .catch(() => ({ key: k, data: null })))).then((res) => { if (!cancelled)
+            setAll(res); });
+        return () => { cancelled = true; };
+    }, [uid, monthKey, month]);
+    const q = query.trim();
+    let results = [];
+    if (all && q.length >= 2) {
+        all.forEach((r) => {
+            if (!r.data)
+                return;
+            Object.keys(r.data.days).forEach((dayKey) => {
+                const text = r.data.days[dayKey].moment;
+                if (text && text.indexOf(q) !== -1) {
+                    results.push({ key: r.key, day: parseInt(dayKey, 10), text: text });
+                }
+            });
+        });
+        results.sort((x, y) => (x.key === y.key ? y.day - x.day : (x.key < y.key ? 1 : -1)));
+    }
+    return (React.createElement("div", { className: "search" },
+        React.createElement("input", { className: "search-input", value: query, placeholder: "\u05DE\u05D9\u05DC\u05D4 \u05DE\u05EA\u05D5\u05DA \u05E8\u05D2\u05E2 \u05D6\u05DB\u05D5\u05E8\u2026", onChange: (e) => setQuery(e.target.value), "aria-label": "\u05D7\u05D9\u05E4\u05D5\u05E9 \u05D1\u05E8\u05D2\u05E2\u05D9\u05DD" }),
+        !all ? React.createElement("p", { className: "hint" }, "\u05D8\u05D5\u05E2\u05DF\u2026") : null,
+        all && q.length >= 2 ? (results.length ? (React.createElement(React.Fragment, null,
+            React.createElement("p", { className: "hint" },
+                results.length,
+                " \u05EA\u05D5\u05E6\u05D0\u05D5\u05EA"),
+            React.createElement("ul", { className: "results" }, results.slice(0, 60).map((r, i) => (React.createElement("li", { key: i },
+                React.createElement("button", { onClick: () => onGo(r.key, r.day) },
+                    React.createElement("b", null,
+                        r.day,
+                        " \u05D1",
+                        HT.monthLabel(r.key)),
+                    React.createElement("span", null, r.text)))))))) : React.createElement("p", { className: "hint" }, "\u05DC\u05D0 \u05E0\u05DE\u05E6\u05D0 \u05DB\u05DC\u05D5\u05DD.")) : null,
+        all && q.length > 0 && q.length < 2 ? React.createElement("p", { className: "hint" }, "\u05E9\u05EA\u05D9 \u05D0\u05D5\u05EA\u05D9\u05D5\u05EA \u05DC\u05E4\u05D7\u05D5\u05EA.") : null));
+}
+function BulkFill({ month, monthKey, onChange }) {
+    const total = HT.daysInMonthKey(monthKey);
+    const [habit, setHabit] = useState(month.habits.length ? month.habits[0].id : "");
+    const [from, setFrom] = useState(1);
+    const [to, setTo] = useState(total);
+    const [mode, setMode] = useState("on");
+    const [note, setNote] = useState("");
+    const days = Array.from({ length: total }, (_, i) => i + 1);
+    if (!month.habits.length)
+        return React.createElement("p", { className: "hint" }, "\u05D0\u05D9\u05DF \u05E0\u05D5\u05E9\u05D0\u05D9\u05DD \u05D1\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D6\u05D4.");
+    const apply = () => {
+        onChange(HT.setRange(month, habit, Number(from), Number(to), mode === "on"));
+        const name = month.habits.filter((h) => h.id === habit)[0];
+        setNote((mode === "on" ? "סומן " : "נוקה ") +
+            "“" + (name ? name.name : "") + "” בימים " + Math.min(from, to) + "–" + Math.max(from, to) + ".");
+    };
+    return (React.createElement("div", { className: "bulk" },
+        React.createElement("p", { className: "hint" }, "\u05DC\u05E1\u05DE\u05DF \u05D0\u05D5 \u05DC\u05E0\u05E7\u05D5\u05EA \u05E0\u05D5\u05E9\u05D0 \u05E2\u05DC \u05DB\u05DE\u05D4 \u05D9\u05DE\u05D9\u05DD \u05D1\u05D1\u05EA \u05D0\u05D7\u05EA."),
+        React.createElement("select", { className: "month-select", value: habit, onChange: (e) => setHabit(e.target.value), "aria-label": "\u05E0\u05D5\u05E9\u05D0" }, month.habits.map((h) => React.createElement("option", { key: h.id, value: h.id }, h.name))),
+        React.createElement("div", { className: "bulk-range" },
+            React.createElement("label", null,
+                React.createElement("span", null, "\u05DE\u05D9\u05D5\u05DD"),
+                React.createElement("select", { value: from, onChange: (e) => setFrom(Number(e.target.value)) }, days.map((d) => React.createElement("option", { key: d, value: d }, d)))),
+            React.createElement("label", null,
+                React.createElement("span", null, "\u05E2\u05D3 \u05D9\u05D5\u05DD"),
+                React.createElement("select", { value: to, onChange: (e) => setTo(Number(e.target.value)) }, days.map((d) => React.createElement("option", { key: d, value: d }, d))))),
+        React.createElement("div", { className: "toggle" },
+            React.createElement("button", { className: mode === "on" ? "on" : "", onClick: () => setMode("on") }, "\u05E1\u05DE\u05DF"),
+            React.createElement("button", { className: mode === "off" ? "on" : "", onClick: () => setMode("off") }, "\u05E0\u05E7\u05D4")),
+        React.createElement("button", { className: "btn wide", onClick: apply }, "\u05D4\u05D7\u05DC"),
+        note ? React.createElement("p", { className: "hint note-ok" }, note) : null));
+}
+/* ---------- 4. שינוי סיסמה ---------- */
+function PasswordChange() {
+    const [cur, setCur] = useState("");
+    const [next, setNext] = useState("");
+    const [msg, setMsg] = useState("");
+    const [err, setErr] = useState("");
+    const [busy, setBusy] = useState(false);
+    const submit = async () => {
+        setErr("");
+        setMsg("");
+        if (next.length < 6) {
+            setErr("הסיסמה החדשה צריכה להיות באורך 6 תווים לפחות.");
+            return;
+        }
+        setBusy(true);
+        try {
+            const u = firebase.auth().currentUser;
+            const cred = firebase.auth.EmailAuthProvider.credential(u.email, cur);
+            await u.reauthenticateWithCredential(cred);
+            await u.updatePassword(next);
+            setCur("");
+            setNext("");
+            setMsg("הסיסמה הוחלפה.");
+        }
+        catch (e) {
+            const map = {
+                "auth/wrong-password": "הסיסמה הנוכחית שגויה.",
+                "auth/invalid-credential": "הסיסמה הנוכחית שגויה.",
+                "auth/weak-password": "הסיסמה החדשה חלשה מדי.",
+                "auth/requires-recent-login": "צריך להתחבר מחדש לפני החלפת סיסמה."
+            };
+            setErr(map[e.code] || "החלפת הסיסמה נכשלה.");
+        }
+        setBusy(false);
+    };
+    return (React.createElement("div", { className: "pwd" },
+        React.createElement("label", { className: "field" },
+            React.createElement("span", null, "\u05D4\u05E1\u05D9\u05E1\u05DE\u05D4 \u05D4\u05E0\u05D5\u05DB\u05D7\u05D9\u05EA"),
+            React.createElement("input", { type: "password", dir: "ltr", value: cur, onChange: (e) => setCur(e.target.value) })),
+        React.createElement("label", { className: "field" },
+            React.createElement("span", null, "\u05E1\u05D9\u05E1\u05DE\u05D4 \u05D7\u05D3\u05E9\u05D4"),
+            React.createElement("input", { type: "password", dir: "ltr", value: next, onChange: (e) => setNext(e.target.value) })),
+        err ? React.createElement("p", { className: "login-error" }, err) : null,
+        msg ? React.createElement("p", { className: "note-ok" }, msg) : null,
+        React.createElement("button", { className: "btn wide", onClick: submit, disabled: busy || !cur || !next }, busy ? "מחליף…" : "החלף סיסמה")));
+}
+/* ---------- 6. הערת מעבר חודש ---------- */
+function NextMonthBanner({ inherited, month, monthKey, onAdd }) {
+    const key = "ht-nm-" + monthKey;
+    const [hidden, setHidden] = useState(() => {
+        try {
+            return localStorage.getItem(key) === "1";
+        }
+        catch (e) {
+            return false;
+        }
+    });
+    const items = HT.nextMonthItems(inherited, month.habits);
+    if (hidden || !items.length)
+        return null;
+    const dismiss = () => {
+        setHidden(true);
+        try {
+            localStorage.setItem(key, "1");
+        }
+        catch (e) { }
+    };
+    return (React.createElement("div", { className: "banner" },
+        React.createElement("p", null,
+            "\u05D1\u05E1\u05D5\u05E3 \u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05E7\u05D5\u05D3\u05DD \u05E8\u05E9\u05DE\u05EA \u05DC\u05E2\u05E6\u05DE\u05DA: ",
+            React.createElement("b", null, items.join(", "))),
+        React.createElement("div", { className: "banner-actions" },
+            items.map((name) => (React.createElement("button", { key: name, className: "btn", onClick: () => onAdd(name) },
+                "\u05D4\u05D5\u05E1\u05E3 \u201C",
+                name,
+                "\u201D"))),
+            React.createElement("button", { className: "ghost sm", onClick: dismiss }, "\u05DC\u05D0 \u05E2\u05DB\u05E9\u05D9\u05D5"))));
+}
+function Drawer({ open, onClose, month, monthKey, onChange, inherited, theme, setTheme, now, uid, onGo }) {
+    if (!open)
+        return null;
+    return (React.createElement("div", { className: "drawer-wrap", onClick: onClose },
+        React.createElement("aside", { className: "drawer", onClick: (e) => e.stopPropagation() },
+            React.createElement("div", { className: "drawer-head" },
+                React.createElement("h2", { className: "brand sm", dir: "ltr" },
+                    React.createElement("span", { className: "brand-log" }, "Log"),
+                    React.createElement("span", { className: "brand-rest" }, "- habit tracker")),
+                React.createElement("button", { className: "ghost", onClick: onClose, "aria-label": "\u05E1\u05D2\u05D5\u05E8" }, "\u2715")),
+            React.createElement(Section, { title: "\u05EA\u05E6\u05D5\u05D2\u05D4" },
+                React.createElement("div", { className: "toggle three" },
+                    React.createElement("button", { className: theme === "light" ? "on" : "", onClick: () => setTheme("light") }, "\u05D9\u05D5\u05DD"),
+                    React.createElement("button", { className: theme === "dark" ? "on" : "", onClick: () => setTheme("dark") }, "\u05DC\u05D9\u05DC\u05D4"),
+                    React.createElement("button", { className: theme === "auto" ? "on" : "", onClick: () => setTheme("auto") }, "\u05D0\u05D5\u05D8\u05D5\u05DE\u05D8\u05D9")),
+                React.createElement("p", { className: "hint" }, "\u05D0\u05D5\u05D8\u05D5\u05DE\u05D8\u05D9 \u05E2\u05D5\u05E7\u05D1 \u05D0\u05D7\u05E8\u05D9 \u05D4\u05D4\u05D2\u05D3\u05E8\u05D4 \u05E9\u05DC \u05D4\u05DE\u05DB\u05E9\u05D9\u05E8.")),
+            React.createElement(Section, { title: "\u05DE\u05D9\u05DC\u05D5\u05D9 \u05DE\u05E8\u05D5\u05D1\u05D4" },
+                React.createElement(BulkFill, { month: month, monthKey: monthKey, onChange: onChange })),
+            React.createElement(Section, { title: "\u05E0\u05D5\u05E9\u05D0\u05D9 \u05D4\u05DE\u05E2\u05E7\u05D1" },
+                React.createElement(HabitsEditor, { month: month, monthKey: monthKey, onChange: onChange, inherited: inherited })),
+            React.createElement(Section, { title: "\u05DE\u05D1\u05D8 \u05E2\u05DC" },
+                React.createElement(SummaryBrowser, { month: month, monthKey: monthKey, now: now, uid: uid })),
+            React.createElement(Section, { title: "\u05D7\u05D9\u05E4\u05D5\u05E9 \u05D1\u05E8\u05D2\u05E2\u05D9\u05DD" },
+                React.createElement(MomentSearch, { uid: uid, monthKey: monthKey, month: month, now: now, onGo: onGo })),
+            React.createElement(Section, { title: "\u05DE\u05D1\u05D8 \u05E9\u05E0\u05EA\u05D9" },
+                React.createElement(YearGrid, { uid: uid, monthKey: monthKey, month: month, now: now })),
+            React.createElement(Section, { title: "\u05DC\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0" },
+                React.createElement(NextMonthNote, { month: month, onChange: onChange, bare: true })),
+            React.createElement(Section, { title: "\u05D4\u05D3\u05E4\u05E1\u05D4" },
+                React.createElement("p", { className: "hint" }, "\u05DE\u05D3\u05E4\u05D9\u05E1 \u05D0\u05EA \u05D4\u05D7\u05D5\u05D3\u05E9 \u05DB\u05D3\u05E3 \u05D0\u05D7\u05D3: \u05D4\u05E1\u05D9\u05DB\u05D5\u05DD, \u05D4\u05D8\u05D1\u05DC\u05D4, \u05D4\u05E6\u05D9\u05D5\u05E0\u05D9\u05DD \u05D5\u05D4\u05E8\u05D2\u05E2\u05D9\u05DD. \u05D1\u05D0\u05D9\u05D9\u05E4\u05D3 \u05D0\u05E4\u05E9\u05E8 \u05DC\u05D1\u05D7\u05D5\u05E8 \u201C\u05E9\u05DE\u05D5\u05E8 \u05DB\u2011PDF\u201D."),
+                React.createElement("button", { className: "btn wide", onClick: () => window.print() },
+                    "\u05D4\u05D3\u05E4\u05E1 \u05D0\u05EA ",
+                    HT.monthLabel(monthKey))),
+            React.createElement(Section, { title: "\u05D7\u05E9\u05D1\u05D5\u05DF" },
+                React.createElement(PasswordChange, null),
+                React.createElement("button", { className: "btn ghost wide", onClick: () => firebase.auth().signOut() }, "\u05D9\u05E6\u05D9\u05D0\u05D4 \u05DE\u05D4\u05D7\u05E9\u05D1\u05D5\u05DF"),
+                React.createElement("p", { className: "credit", dir: "ltr" },
+                    "v",
+                    HT.VERSION,
+                    " \u00B7 ",
+                    HT.CREDIT)))));
+}
+/* ---------- ניווט חודשים ---------- */
+function MonthNav({ monthKey, onShift, status, onRetry }) {
+    return (React.createElement("div", { className: "monthnav" },
+        React.createElement("button", { className: "ghost", onClick: () => onShift(-1), disabled: !HT.canGoBack(monthKey), "aria-label": "\u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05E7\u05D5\u05D3\u05DD" },
+            React.createElement(Chevron, { dir: "right" })),
+        React.createElement("h2", { className: "month-title" }, HT.monthLabel(monthKey)),
+        React.createElement("button", { className: "ghost", onClick: () => onShift(1), "aria-label": "\u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0" },
+            React.createElement(Chevron, { dir: "left" })),
+        status === "error"
+            ? React.createElement("button", { className: "status error retry", onClick: onRetry }, "\u05DC\u05D0 \u05E0\u05E9\u05DE\u05E8 \u00B7 \u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1")
+            : React.createElement("span", { className: "status " + status }, status === "saving" ? "שומר…" : "נשמר")));
+}
+/* ---------- טבלת הנושאים ---------- */
+function HabitGrid({ month, monthKey, today, rowH, headH, onToggle, fluid, dayCol, onOpenDay }) {
+    const total = HT.daysInMonthKey(monthKey);
+    const days = [];
+    for (let d = 1; d <= total; d++)
+        days.push(d);
+    return (React.createElement("div", { className: "grid" + (fluid ? " fluid" : "") },
+        React.createElement("div", { className: "grid-head", style: { height: headH + "px" } },
+            dayCol ? React.createElement("div", { className: "corner" }) : null,
+            month.habits.map((h) => (React.createElement("div", { className: "habit-label", key: h.id },
+                React.createElement("span", null, h.name))))),
+        React.createElement("div", { className: "grid-body" }, days.map((d) => {
+            return (React.createElement("div", { className: "grid-row" + (d === today ? " is-today" : "") +
+                    (HT.isWeekend(monthKey, d) ? " is-weekend" : ""), key: d, style: { height: rowH + "px" } },
+                dayCol ? (React.createElement("button", { className: "daycol", onClick: () => onOpenDay && onOpenDay(d) },
+                    React.createElement("b", null, d),
+                    React.createElement("i", null, HT.dayOfWeekLetter(monthKey, d)))) : null,
+                month.habits.map((h, i) => (React.createElement("button", { className: "cell", key: h.id, onClick: () => onToggle(d, h.id), "aria-pressed": HT.isMarked(month, d, h.id), "aria-label": h.name + ", יום " + d }, HT.isMarked(month, d, h.id) ? React.createElement(XMark, { seed: d + i }) : null)))));
+        }))));
+}
+/* ---------- רשימת הרגעים ---------- */
+function MomentsList({ month, monthKey, today, rowH, onMoment, onOpenDay }) {
+    const total = HT.daysInMonthKey(monthKey);
+    const rows = [];
+    for (let d = 1; d <= total; d++) {
+        const day = HT.getDay(month, d);
+        rows.push(React.createElement("div", { className: "moment-row" + (d === today ? " is-today" : "") +
+                (HT.isWeekend(monthKey, d) ? " is-weekend" : ""), key: d, style: { height: rowH + "px" } },
+            onOpenDay
+                ? React.createElement("button", { className: "daynum", onClick: () => onOpenDay(d), "aria-label": "פתח את יום " + d },
+                    React.createElement("b", null, d),
+                    React.createElement("i", null, HT.dayOfWeekLetter(monthKey, d)))
+                : React.createElement("span", { className: "daynum" },
+                    React.createElement("b", null, d),
+                    React.createElement("i", null, HT.dayOfWeekLetter(monthKey, d))),
+            React.createElement("input", { className: "moment-input", value: day.moment, maxLength: 110, placeholder: d === today ? "מה נשאר מהיום?" : "", onChange: (e) => onMoment(d, e.target.value), "aria-label": "רגע זכור מיום " + d })));
+    }
+    return React.createElement("div", { className: "moments" }, rows);
+}
+/* ---------- סיכום ---------- */
+function Ring({ percent, size, stroke, color, children }) {
+    const r = (size - stroke) / 2;
+    const c = 2 * Math.PI * r;
+    return (React.createElement("svg", { className: "ring", width: size, height: size, viewBox: `0 0 ${size} ${size}` },
+        React.createElement("circle", { cx: size / 2, cy: size / 2, r: r, className: "ring-track", strokeWidth: stroke }),
+        React.createElement("circle", { cx: size / 2, cy: size / 2, r: r, className: "ring-fill", strokeWidth: stroke, stroke: color, strokeDasharray: `${(c * percent) / 100} ${c}`, transform: `rotate(-90 ${size / 2} ${size / 2})` }),
+        React.createElement("text", { x: "50%", y: "50%", className: "ring-text" }, children)));
+}
+function Narrative({ month, monthKey, now }) {
+    const text = HT.monthNarrative(month, monthKey, now);
+    if (!text)
+        return null;
+    return React.createElement("p", { className: "narrative" }, text);
+}
+function Insights({ month, monthKey, now }) {
+    const lines = HT.insights(month, monthKey, now);
+    if (!lines.length)
+        return null;
+    return (React.createElement("ul", { className: "insights" }, lines.map((l, i) => React.createElement("li", { key: i }, l))));
+}
+function Summary({ month, monthKey, now, bare }) {
+    const stats = HT.habitStats(month, monthKey, now);
+    if (!stats.length)
+        return null;
+    const totalDone = stats.reduce((a, s) => a + s.done, 0);
+    const totalPossible = stats.reduce((a, s) => a + s.counted, 0);
+    const overall = totalPossible ? Math.round((totalDone / totalPossible) * 100) : 0;
+    return (React.createElement("section", { className: "summary" + (bare ? " bare" : "") },
+        bare ? null : React.createElement("div", { className: "band" },
+            React.createElement("h3", null, "\u05DE\u05D1\u05D8 \u05E2\u05DC"),
+            React.createElement("span", null, HT.monthLabel(monthKey))),
+        React.createElement(Narrative, { month: month, monthKey: monthKey, now: now }),
+        React.createElement("div", { className: "summary-body" },
+            React.createElement("div", { className: "overall" },
+                React.createElement(Ring, { percent: overall, size: 104, stroke: 11, color: "var(--pen)" }, overall + "%"),
+                React.createElement("p", null,
+                    totalDone,
+                    " \u05E1\u05D9\u05DE\u05D5\u05E0\u05D9\u05DD \u05DE\u05EA\u05D5\u05DA ",
+                    totalPossible,
+                    " \u05D0\u05E4\u05E9\u05E8\u05D9\u05D9\u05DD")),
+            React.createElement("div", { className: "rings" }, stats.map((s) => (React.createElement("div", { className: "ring-cell", key: s.id },
+                React.createElement(Ring, { percent: s.percent, size: 68, stroke: 8, color: s.percent >= 80 ? "var(--pen-green)" : "var(--pen)" }, s.percent + "%"),
+                React.createElement("b", null, s.name),
+                React.createElement("i", null,
+                    s.done,
+                    "/",
+                    s.counted,
+                    " \u00B7 \u05E8\u05E6\u05E3 ",
+                    s.best))))))));
+}
+/* ---------- דיאלוג אישור ---------- */
+function ConfirmDialog({ open, title, body, confirmLabel, danger, onConfirm, onCancel }) {
+    if (!open)
+        return null;
+    return (React.createElement("div", { className: "confirm-wrap", onClick: onCancel },
+        React.createElement("div", { className: "confirm", onClick: (e) => e.stopPropagation(), role: "alertdialog", "aria-modal": "true" },
+            React.createElement("h3", null, title),
+            body ? React.createElement("p", null, body) : null,
+            React.createElement("div", { className: "confirm-actions" },
+                React.createElement("button", { className: "btn", onClick: onCancel }, "\u05D1\u05D9\u05D8\u05D5\u05DC"),
+                React.createElement("button", { className: "btn primary" + (danger ? " danger" : ""), onClick: onConfirm }, confirmLabel || "אישור")))));
+}
+/* ---------- עורך הנושאים ---------- */
+function HabitsEditor({ month, onChange, monthKey, inherited }) {
+    const [draft, setDraft] = useState("");
+    const [pending, setPending] = useState(null);
+    return (React.createElement("div", { className: "editor" },
+        React.createElement("h3", null,
+            "\u05E0\u05D5\u05E9\u05D0\u05D9 ",
+            HT.monthLabel(monthKey)),
+        React.createElement("p", { className: "hint" }, "\u05E9\u05D9\u05E0\u05D5\u05D9 \u05DB\u05D0\u05DF \u05DE\u05E9\u05E4\u05D9\u05E2 \u05E2\u05DC \u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D6\u05D4 \u05D1\u05DC\u05D1\u05D3. \u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0 \u05D9\u05D9\u05E4\u05EA\u05D7 \u05E2\u05DD \u05D0\u05D5\u05EA\u05D4 \u05E8\u05E9\u05D9\u05DE\u05D4."),
+        inherited ? React.createElement("p", { className: "hint note" },
+            "\u05D1\u05E1\u05D5\u05E3 \u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05E7\u05D5\u05D3\u05DD \u05E8\u05E9\u05DE\u05EA: \u201C",
+            inherited,
+            "\u201D") : null,
+        React.createElement("ul", { className: "editor-list" }, month.habits.map((h, i) => (React.createElement("li", { key: h.id },
+            React.createElement("input", { value: h.name, onChange: (e) => onChange(HT.renameHabit(month, h.id, e.target.value)), "aria-label": "\u05E9\u05DD \u05D4\u05E0\u05D5\u05E9\u05D0" }),
+            React.createElement("button", { className: "ghost sm", onClick: () => onChange(HT.moveHabit(month, h.id, -1)), disabled: i === 0, "aria-label": "\u05D4\u05D6\u05D6 \u05D9\u05DE\u05D9\u05E0\u05D4" }, "\u2191"),
+            React.createElement("button", { className: "ghost sm", onClick: () => onChange(HT.moveHabit(month, h.id, 1)), disabled: i === month.habits.length - 1, "aria-label": "\u05D4\u05D6\u05D6 \u05E9\u05DE\u05D0\u05DC\u05D4" }, "\u2193"),
+            React.createElement("button", { className: "ghost sm danger", "aria-label": "מחק את " + h.name, onClick: () => setPending(h) }, "\u2715"))))),
+        React.createElement("div", { className: "editor-add" },
+            React.createElement("input", { value: draft, placeholder: "\u05E0\u05D5\u05E9\u05D0 \u05D7\u05D3\u05E9", onChange: (e) => setDraft(e.target.value), onKeyDown: (e) => {
+                    if (e.key === "Enter" && draft.trim()) {
+                        onChange(HT.addHabit(month, draft.trim()));
+                        setDraft("");
+                    }
+                } }),
+            React.createElement("button", { className: "btn", disabled: !draft.trim(), onClick: () => { onChange(HT.addHabit(month, draft.trim())); setDraft(""); } }, "\u05D4\u05D5\u05E1\u05E3")),
+        React.createElement(ConfirmDialog, { open: !!pending, title: pending ? "למחוק את “" + pending.name + "”?" : "", body: "הנושא יימחק מ" + HT.monthLabel(monthKey) + " בלבד, יחד עם כל האיקסים שלו בחודש הזה. חודשים קודמים לא ייפגעו.", confirmLabel: "\u05DE\u05D7\u05E7", danger: true, onCancel: () => setPending(null), onConfirm: () => { onChange(HT.removeHabit(month, pending.id)); setPending(null); } })));
+}
+function NextMonthNote({ month, onChange, bare }) {
+    return (React.createElement("div", { className: "nextmonth" + (bare ? " bare" : "") },
+        React.createElement("label", null,
+            React.createElement("span", null, "\u05DC\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0"),
+            React.createElement("input", { value: month.nextMonth, maxLength: 120, placeholder: "\u05E0\u05D5\u05E9\u05D0\u05D9\u05DD \u05E9\u05D1\u05D0 \u05DC\u05D9 \u05DC\u05D4\u05D5\u05E1\u05D9\u05E3\u2026", onChange: (e) => onChange(Object.assign(Object.assign({}, month), { nextMonth: e.target.value })) }))));
+}
+/* ---------- שדה מספרי ---------- */
+/** שומר את מה שהוקלד כטקסט, ומוסר לאפליקציה רק ערך שלם ותקין.
+    כך אפשר להקליד "73." בדרך ל-"73.3" בלי שהשדה יתאפס. */
+function NumField({ label, value, placeholder, onCommit, max, hint }) {
+    const [text, setText] = useState(value === null || value === undefined ? "" : String(value));
+    const change = (raw) => {
+        const clean = raw.replace(",", ".");
+        if (clean !== "" && !/^\d*\.?\d*$/.test(clean))
+            return; // אותיות ומינוס לא נכנסים
+        setText(clean);
+        if (clean === "" || clean === ".") {
+            onCommit("");
+            return;
+        }
+        if (/^\d+(\.\d+)?$/.test(clean))
+            onCommit(clean);
+    };
+    const blur = () => {
+        if (text === "" || text === ".") {
+            setText("");
+            onCommit("");
+            return;
+        }
+        let n = Number(text);
+        if (!isFinite(n)) {
+            setText("");
+            onCommit("");
+            return;
+        }
+        if (max !== undefined && n > max)
+            n = max;
+        n = Math.round(n * 10) / 10;
+        setText(String(n));
+        onCommit(String(n));
+    };
+    return (React.createElement("label", { className: "field" },
+        React.createElement("span", null, label),
+        React.createElement("input", { inputMode: "decimal", value: text, placeholder: placeholder, onChange: (e) => change(e.target.value), onBlur: blur }),
+        hint ? React.createElement("small", { className: "field-hint" }, hint) : null));
+}
+/* ---------- חלון יום בודד ---------- */
+function DaySheet({ month, monthKey, day, onClose, onPatch, onToggle, onStep, onClear }) {
+    const [confirmClear, setConfirmClear] = useState(false);
+    if (!day)
+        return null;
+    const d = HT.getDay(month, day);
+    const total = HT.daysInMonthKey(monthKey);
+    const hasData = !!(d.moment || d.sleep !== null || d.weight !== null || Object.keys(d.marks).length);
+    return (React.createElement("div", { className: "sheet-wrap", onClick: onClose },
+        React.createElement("div", { className: "sheet", onClick: (e) => e.stopPropagation() },
+            React.createElement("div", { className: "sheet-head" },
+                React.createElement("div", { className: "sheet-nav" },
+                    React.createElement("button", { className: "ghost", onClick: () => onStep(-1), disabled: day <= 1, "aria-label": "\u05D9\u05D5\u05DD \u05E7\u05D5\u05D3\u05DD" },
+                        React.createElement(Chevron, { dir: "right" })),
+                    React.createElement("h3", null,
+                        day,
+                        " \u05D1",
+                        HT.monthLabel(monthKey).split(" ")[0],
+                        ", \u05D9\u05D5\u05DD ",
+                        HT.dayOfWeekLetter(monthKey, day)),
+                    React.createElement("button", { className: "ghost", onClick: () => onStep(1), disabled: day >= total, "aria-label": "\u05D9\u05D5\u05DD \u05D4\u05D1\u05D0" },
+                        React.createElement(Chevron, { dir: "left" }))),
+                React.createElement("button", { className: "ghost", onClick: onClose, "aria-label": "\u05E1\u05D2\u05D5\u05E8" }, "\u2715")),
+            React.createElement("label", { className: "field" },
+                React.createElement("span", null, "\u05E8\u05D2\u05E2 \u05D6\u05DB\u05D5\u05E8"),
+                React.createElement("input", { value: d.moment, maxLength: 110, placeholder: "\u05E9\u05D5\u05E8\u05D4 \u05D0\u05D7\u05EA \u05DE\u05D4\u05D9\u05D5\u05DD", onChange: (e) => onPatch(day, { moment: e.target.value }) })),
+            React.createElement("div", { className: "two" },
+                React.createElement(NumField, { key: "s" + monthKey + day, label: "\u05E6\u05D9\u05D5\u05DF \u05E9\u05D9\u05E0\u05D4", value: d.sleep, placeholder: "0\u2013100", max: 100, onCommit: (v) => onPatch(day, { sleep: v }) }),
+                React.createElement(NumField, { key: "w" + monthKey + day, label: "\u05DE\u05E9\u05E7\u05DC", value: d.weight, placeholder: "73.3", hint: '\u05E7"\u05D2, \u05D0\u05E4\u05E9\u05E8 \u05E2\u05E9\u05E8\u05D5\u05E0\u05D9', onCommit: (v) => onPatch(day, { weight: v }) })),
+            React.createElement("div", { className: "sheet-habits" }, month.habits.map((h, i) => {
+                const on = HT.isMarked(month, day, h.id);
+                return (React.createElement("button", { key: h.id, className: "chip" + (on ? " on" : ""), onClick: () => onToggle(day, h.id) },
+                    on ? React.createElement(XMark, { seed: day + i }) : React.createElement("span", { className: "dot" }),
+                    h.name));
+            })),
+            hasData ? (React.createElement("button", { className: "linky danger", onClick: () => setConfirmClear(true) }, "\u05E0\u05E7\u05D4 \u05D0\u05EA \u05D4\u05D9\u05D5\u05DD \u05D4\u05D6\u05D4")) : null,
+            React.createElement(ConfirmDialog, { open: confirmClear, title: "לנקות את יום " + day + "?", body: "\u05D4\u05E8\u05D2\u05E2 \u05D4\u05D6\u05DB\u05D5\u05E8, \u05E6\u05D9\u05D5\u05DF \u05D4\u05E9\u05D9\u05E0\u05D4, \u05D4\u05DE\u05E9\u05E7\u05DC \u05D5\u05DB\u05DC \u05D4\u05E1\u05D9\u05DE\u05D5\u05E0\u05D9\u05DD \u05E9\u05DC \u05D4\u05D9\u05D5\u05DD \u05D4\u05D6\u05D4 \u05D9\u05D9\u05DE\u05D7\u05E7\u05D5. \u05E9\u05D0\u05E8 \u05D4\u05D7\u05D5\u05D3\u05E9 \u05DC\u05D0 \u05D9\u05D9\u05E4\u05D2\u05E2.", confirmLabel: "\u05E0\u05E7\u05D4", danger: true, onCancel: () => setConfirmClear(false), onConfirm: () => { onClear(day); setConfirmClear(false); } }))));
+}
+/* ---------- תצוגת מחברת ---------- */
+function Spread(props) {
+    const { month, monthKey, today, now, onToggle, onMoment, onChange } = props;
+    const ROW = 30, HEAD = 132;
+    const sleepPts = HT.series(month, "sleep", monthKey);
+    const weightPts = HT.series(month, "weight", monthKey);
+    const wb = HT.weightBounds(weightPts);
+    return (React.createElement("div", { className: "spread" },
+        React.createElement("section", { className: "page page-right" },
+            props.banner,
+            React.createElement("div", { className: "page-head", style: { height: HEAD + "px" } },
+                React.createElement(MonthNav, { monthKey: monthKey, onShift: props.onShift, status: props.status, onRetry: props.onRetry }),
+                React.createElement("p", { className: "page-kicker" }, "\u05E8\u05D2\u05E2\u05D9\u05DD \u05D6\u05DB\u05D5\u05E8\u05D9\u05DD")),
+            React.createElement(MomentsList, { month: month, monthKey: monthKey, today: today, rowH: ROW, onMoment: onMoment, onOpenDay: props.openDay }),
+            React.createElement(NextMonthNote, { month: month, onChange: onChange })),
+        React.createElement("div", { className: "gutter", "aria-hidden": "true" }),
+        React.createElement("section", { className: "page page-left" },
+            React.createElement(AddButton, { onClick: () => props.openDay(today > 0 ? today : 1), alert: props.missing > 0, title: props.missing > 0 ? props.missing + " ימים ללא ציון שינה" : "הזנה מהירה ליום" }),
+            React.createElement("div", { className: "left-inner" },
+                React.createElement("div", { className: "graphs" },
+                    React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 132, rowH: ROW, headH: HEAD, color: "var(--pen)", label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF", monthKey: monthKey, today: today }),
+                    React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 104, rowH: ROW, headH: HEAD, color: "var(--pen-green)", label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max), monthKey: monthKey, today: today })),
+                React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle })),
+            React.createElement(Summary, { month: month, monthKey: monthKey, now: now }))));
+}
+/* ---------- תצוגת נייד ---------- */
+function Phone(props) {
+    const { month, monthKey, today, now, onToggle, onMoment, tab, setTab, openDay } = props;
+    const ROW = 40, HEAD = 108;
+    const sleepPts = HT.series(month, "sleep", monthKey);
+    const weightPts = HT.series(month, "weight", monthKey);
+    const wb = HT.weightBounds(weightPts);
+    const missing = HT.missingSleepDays(month, monthKey, now);
+    return (React.createElement("div", { className: "phone" },
+        React.createElement("nav", { className: "segments" }, [["grid", "החודש"], ["moments", "רגעים"], ["graphs", "גרפים"]].map(([id, label]) => (React.createElement("button", { key: id, className: tab === id ? "on" : "", onClick: () => setTab(id) }, label)))),
+        props.banner,
+        React.createElement("div", { className: "phone-month" },
+            React.createElement(MonthNav, { monthKey: monthKey, onShift: props.onShift, status: props.status, onRetry: props.onRetry }),
+            React.createElement(AddButton, { onClick: () => openDay(today > 0 ? today : 1), alert: missing.length > 0, title: missing.length > 0 ? missing.length + " ימים ללא ציון שינה" : "הזנה מהירה ליום" })),
+        tab === "grid" ? (React.createElement("div", { className: "pane" },
+            React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle, fluid: true, dayCol: true, onOpenDay: openDay }))) : null,
+        tab === "moments" ? (React.createElement("div", { className: "pane" },
+            React.createElement(MomentsList, { month: month, monthKey: monthKey, today: today, rowH: 44, onMoment: onMoment, onOpenDay: openDay }))) : null,
+        tab === "graphs" ? (React.createElement("div", { className: "pane" },
+            missing.length ? (React.createElement("p", { className: "missing" },
+                missing.length === 1 ? "יום אחד בלי ציון שינה: " : missing.length + " ימים בלי ציון שינה: ",
+                missing.slice(0, 8).join(", "),
+                missing.length > 8 ? "…" : "")) : null,
+            React.createElement("div", { className: "graph-row" },
+                React.createElement("div", { className: "rownums", style: { paddingTop: "76px" } }, Array.from({ length: HT.daysInMonthKey(monthKey) }, (_, i) => i + 1).map((d) => (React.createElement("button", { key: d, className: "daynum sm" + (d === today ? " is-today" : ""), style: { height: "30px" }, onClick: () => openDay(d) },
+                    React.createElement("b", null, d))))),
+                React.createElement(VerticalGraph, { points: sleepPts, min: 0, max: 100, width: 128, rowH: 30, headH: 76, color: "var(--pen)", label: "\u05E9\u05D9\u05E0\u05D4", unit: "\u05E6\u05D9\u05D5\u05DF", monthKey: monthKey, today: today }),
+                React.createElement(VerticalGraph, { points: weightPts, min: wb.min, max: wb.max, width: 100, rowH: 30, headH: 76, color: "var(--pen-green)", label: "\u05DE\u05E9\u05E7\u05DC", unit: '\u05E7"\u05D2', labels: HT.weightLabels(wb.min, wb.max), monthKey: monthKey, today: today })),
+            React.createElement(HabitGrid, { month: month, monthKey: monthKey, today: today, rowH: ROW, headH: HEAD, onToggle: onToggle }))) : null));
+}
+/* ---------- גיליון הדפסה ---------- */
+function PrintSheet({ month, monthKey, now }) {
+    const total = HT.daysInMonthKey(monthKey);
+    const days = Array.from({ length: total }, (_, i) => i + 1);
+    const stats = HT.habitStats(month, monthKey, now);
+    return (React.createElement("div", { className: "print-only" },
+        React.createElement("header", { className: "print-head" },
+            React.createElement("h1", { dir: "ltr" }, "Log \u2014 habit tracker"),
+            React.createElement("h2", null, HT.monthLabel(monthKey))),
+        React.createElement("p", { className: "print-narrative" }, HT.monthNarrative(month, monthKey, now)),
+        React.createElement("table", { className: "print-table" },
+            React.createElement("thead", null,
+                React.createElement("tr", null,
+                    React.createElement("th", null, "\u05D9\u05D5\u05DD"),
+                    React.createElement("th", null),
+                    month.habits.map((h) => React.createElement("th", { key: h.id, className: "rot" },
+                        React.createElement("span", null, h.name))),
+                    React.createElement("th", null, "\u05E9\u05D9\u05E0\u05D4"),
+                    React.createElement("th", null, "\u05DE\u05E9\u05E7\u05DC"),
+                    React.createElement("th", { className: "wide" }, "\u05E8\u05D2\u05E2 \u05D6\u05DB\u05D5\u05E8"))),
+            React.createElement("tbody", null, days.map((d) => {
+                const day = HT.getDay(month, d);
+                return (React.createElement("tr", { key: d, className: HT.isWeekend(monthKey, d) ? "wk" : "" },
+                    React.createElement("td", null, d),
+                    React.createElement("td", null, HT.dayOfWeekLetter(monthKey, d)),
+                    month.habits.map((h) => (React.createElement("td", { key: h.id, className: "mark" }, HT.isMarked(month, d, h.id) ? "✕" : ""))),
+                    React.createElement("td", null, day.sleep === null ? "" : day.sleep),
+                    React.createElement("td", null, day.weight === null ? "" : day.weight),
+                    React.createElement("td", { className: "wide" }, day.moment)));
+            }))),
+        React.createElement("ul", { className: "print-stats" }, stats.map((s) => (React.createElement("li", { key: s.id },
+            s.name,
+            ": ",
+            s.percent,
+            "% (",
+            s.done,
+            "/",
+            s.counted,
+            ") \u00B7 \u05E8\u05E6\u05E3 ",
+            s.best)))),
+        month.nextMonth ? React.createElement("p", { className: "print-next" },
+            "\u05DC\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0: ",
+            month.nextMonth) : null,
+        React.createElement("p", { className: "print-foot", dir: "ltr" },
+            "v",
+            HT.VERSION,
+            " \u00B7 ",
+            HT.CREDIT)));
+}
+/* ---------- האפליקציה ---------- */
+function App() {
+    const [user, setUser] = useState(undefined);
+    const [monthKey, setMonthKey] = useState(HT.currentMonthKey());
+    const [month, setMonth] = useState(null);
+    const [status, setStatus] = useState("saved");
+    const [wide, setWide] = useState(window.innerWidth >= 900);
+    const [tab, setTab] = useState("grid");
+    const [menu, setMenu] = useState(false);
+    const [sheetDay, setSheetDay] = useState(null);
+    const [inherited, setInherited] = useState("");
+    const [theme, setTheme] = useState(function () {
+        try {
+            return localStorage.getItem("ht-theme") || "light";
+        }
+        catch (e) {
+            return "light";
+        }
+    });
+    const saveTimer = useRef(null);
+    const dirty = useRef(false);
+    const lastPayload = useRef(null);
+    const now = new Date();
+    const t = HT.todayParts(now);
+    const today = HT.monthKey(t.year, t.month) === monthKey ? t.day : -1;
+    useEffect(() => {
+        const mq = window.matchMedia("(prefers-color-scheme: dark)");
+        const apply = () => {
+            const effective = theme === "auto" ? (mq.matches ? "dark" : "light") : theme;
+            document.documentElement.setAttribute("data-theme", effective);
+        };
+        apply();
+        try {
+            localStorage.setItem("ht-theme", theme);
+        }
+        catch (e) { }
+        if (mq.addEventListener)
+            mq.addEventListener("change", apply);
+        return () => { if (mq.removeEventListener)
+            mq.removeEventListener("change", apply); };
+    }, [theme]);
+    useEffect(() => {
+        const onResize = () => setWide(window.innerWidth >= 900);
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, []);
+    useEffect(() => firebase.auth().onAuthStateChanged((u) => setUser(u || null)), []);
+    /* ניתוק אוטומטי אחרי 10 דקות בלי פעילות.
+       נמדד לפי שעון אמיתי (חותמת זמן), כי ספארי מקפיא טיימרים כשהאתר ברקע. */
+    useEffect(() => {
+        if (!user)
+            return;
+        let timer = null;
+        const IDLE_MS = 10 * 60 * 1000;
+        const KEY = "ht-last-active";
+        const readLast = () => { try {
+            return Number(localStorage.getItem(KEY)) || 0;
+        }
+        catch (e) {
+            return 0;
+        } };
+        const writeLast = (t) => { try {
+            localStorage.setItem(KEY, String(t));
+        }
+        catch (e) { } };
+        const expired = () => HT.idleExpired(readLast(), Date.now(), IDLE_MS);
+        const logout = () => { if (timer)
+            clearTimeout(timer); firebase.auth().signOut(); };
+        const arm = () => {
+            if (timer)
+                clearTimeout(timer);
+            timer = setTimeout(() => { if (expired())
+                logout();
+            else
+                arm(); }, 30 * 1000);
+        };
+        const touch = () => { writeLast(Date.now()); arm(); };
+        /* חזרה לאתר: קודם בודקים כמה זמן עבר, ורק אם לא פג — ממשיכים */
+        const onVisible = () => {
+            if (document.visibilityState !== "visible")
+                return;
+            if (expired())
+                logout();
+            else
+                arm();
+        };
+        /* כניסה לאתר עם התחברות שמורה מלפני יותר מ-10 דקות — מנתקים מיד */
+        if (expired()) {
+            logout();
+            return;
+        }
+        const events = ["pointerdown", "keydown", "wheel", "touchstart", "scroll"];
+        events.forEach((e) => window.addEventListener(e, touch, { passive: true }));
+        document.addEventListener("visibilitychange", onVisible);
+        window.addEventListener("pageshow", onVisible);
+        arm();
+        return () => {
+            if (timer)
+                clearTimeout(timer);
+            events.forEach((e) => window.removeEventListener(e, touch));
+            document.removeEventListener("visibilitychange", onVisible);
+            window.removeEventListener("pageshow", onVisible);
+        };
+    }, [user]);
+    useEffect(() => {
+        if (!user) {
+            setMonth(null);
+            return;
+        }
+        let cancelled = false;
+        setMonth(null);
+        dirty.current = false;
+        (async () => {
+            try {
+                const snap = await monthRef(user.uid, monthKey).get();
+                const prevSnap = await monthRef(user.uid, HT.shiftMonth(monthKey, -1)).get();
+                if (cancelled)
+                    return;
+                const prev = prevSnap.exists ? HT.normalizeMonth(prevSnap.data()) : null;
+                setInherited(prev ? prev.nextMonth : "");
+                setMonth(snap.exists
+                    ? HT.normalizeMonth(snap.data(), prev ? prev.habits : null)
+                    : HT.emptyMonth(prev ? prev.habits : null));
+                setStatus("saved");
+            }
+            catch (e) {
+                if (!cancelled) {
+                    setMonth(HT.emptyMonth());
+                    setStatus("error");
+                }
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [user, monthKey]);
+    const scheduleSave = useCallback((next) => {
+        if (!user)
+            return;
+        dirty.current = true;
+        setStatus("saving");
+        if (saveTimer.current)
+            clearTimeout(saveTimer.current);
+        lastPayload.current = { key: monthKey, data: next };
+        saveTimer.current = setTimeout(async () => {
+            try {
+                await monthRef(user.uid, monthKey).set(next);
+                dirty.current = false;
+                setStatus("saved");
+            }
+            catch (e) {
+                setStatus("error");
+            }
+        }, 800);
+    }, [user, monthKey]);
+    const update = useCallback((next) => { setMonth(next); scheduleSave(next); }, [scheduleSave]);
+    const retrySave = useCallback(async () => {
+        const p = lastPayload.current;
+        if (!p || !user)
+            return;
+        setStatus("saving");
+        try {
+            await monthRef(user.uid, p.key).set(p.data);
+            dirty.current = false;
+            setStatus("saved");
+        }
+        catch (e) {
+            setStatus("error");
+        }
+    }, [user]);
+    useEffect(() => {
+        const warn = (e) => { if (dirty.current) {
+            e.preventDefault();
+            e.returnValue = "";
+        } };
+        window.addEventListener("beforeunload", warn);
+        return () => window.removeEventListener("beforeunload", warn);
+    }, []);
+    const onToggle = (d, id) => update(HT.toggleMark(month, d, id));
+    const onClearDay = (d) => { update(HT.clearDay(month, d)); setSheetDay(null); };
+    const onMoment = (d, v) => update(HT.withDay(month, d, { moment: v }));
+    const onPatch = (d, patch) => update(HT.withDay(month, d, patch));
+    const onNumber = (d, field, v) => {
+        let val = v;
+        if (field === "sleep" && v !== "") {
+            const n = Number(v);
+            if (isFinite(n))
+                val = Math.max(0, Math.min(100, n));
+        }
+        update(HT.withDay(month, d, { [field]: val }));
+    };
+    const onShift = (delta) => {
+        if (delta < 0 && !HT.canGoBack(monthKey))
+            return;
+        setMonthKey(HT.shiftMonth(monthKey, delta));
+    };
+    if (user === undefined)
+        return React.createElement("div", { className: "boot" }, "\u05E8\u05D2\u05E2\u2026");
+    if (user === null)
+        return React.createElement(LoginScreen, null);
+    const missingCount = month ? HT.missingSleepDays(month, monthKey, now).length : 0;
+    const shared = {
+        month, monthKey, today, now, status, inherited, missing: missingCount,
+        onToggle, onMoment, onNumber, onPatch, onShift, onChange: update,
+        openDay: setSheetDay, onRetry: retrySave,
+        banner: month ? (React.createElement(NextMonthBanner, { inherited: inherited, month: month, monthKey: monthKey, onAdd: (name) => update(HT.addHabit(month, name)) })) : null
+    };
+    return (React.createElement("div", { className: "app" },
+        React.createElement("div", { className: "screen" },
+            React.createElement(TopBar, { onMenu: () => setMenu(true) }),
+            !month
+                ? React.createElement("div", { className: "boot" },
+                    "\u05E4\u05D5\u05EA\u05D7 \u05D0\u05EA ",
+                    HT.monthLabel(monthKey),
+                    "\u2026")
+                : wide
+                    ? React.createElement("div", { className: "desk" },
+                        React.createElement(Spread, Object.assign({}, shared)))
+                    : React.createElement(Phone, Object.assign({}, shared, { tab: tab, setTab: setTab }))),
+        month ? React.createElement(PrintSheet, { month: month, monthKey: monthKey, now: now }) : null,
+        month ? (React.createElement(React.Fragment, null,
+            React.createElement(Drawer, { open: menu, onClose: () => setMenu(false), month: month, monthKey: monthKey, onChange: update, inherited: inherited, theme: theme, setTheme: setTheme, now: now, uid: user.uid, onGo: (key, day) => { setMonthKey(key); setSheetDay(day); setMenu(false); } }),
+            React.createElement(DaySheet, { month: month, monthKey: monthKey, day: sheetDay, onClose: () => setSheetDay(null), onPatch: onPatch, onToggle: onToggle, onClear: onClearDay, onStep: (delta) => setSheetDay(function (cur) {
+                    const total = HT.daysInMonthKey(monthKey);
+                    return Math.min(total, Math.max(1, cur + delta));
+                }) }))) : null));
+}
+/* רשת ביטחון: שגיאה בזמן ריצה תציג הודעה במקום מסך לבן */
+class ErrorBoundary extends React.Component {
+    constructor(props) { super(props); this.state = { error: null }; }
+    static getDerivedStateFromError(error) { return { error: error }; }
+    render() {
+        if (!this.state.error)
+            return this.props.children;
+        return (React.createElement("div", { className: "crash" },
+            React.createElement("h2", null, "\u05DE\u05E9\u05D4\u05D5 \u05E0\u05E9\u05D1\u05E8"),
+            React.createElement("p", null, "\u05E0\u05E1\u05D4 \u05DC\u05E8\u05E2\u05E0\u05DF \u05D0\u05EA \u05D4\u05D3\u05E3. \u05D0\u05DD \u05D6\u05D4 \u05D7\u05D5\u05D6\u05E8, \u05D6\u05D4 \u05D4\u05E4\u05E8\u05D8 \u05E9\u05D9\u05E2\u05D6\u05D5\u05E8 \u05DC\u05EA\u05E7\u05DF:"),
+            React.createElement("code", null, String(this.state.error && this.state.error.message)),
+            React.createElement("p", { className: "credit", dir: "ltr" },
+                "v",
+                HT.VERSION)));
+    }
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(ErrorBoundary, null,
+    React.createElement(App, null)));
+</script>
 </body>
 </html>
