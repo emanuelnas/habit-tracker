@@ -126,10 +126,10 @@ function LoginScreen() {
             React.createElement("button", { className: "btn primary", onClick: submit, disabled: busy }, busy ? "מתחבר…" : "כניסה"),
             React.createElement("button", { className: "linky", onClick: reset }, "\u05E9\u05DB\u05D7\u05EA\u05D9 \u05E1\u05D9\u05E1\u05DE\u05D4"),
             React.createElement("p", { className: "credit", dir: "ltr" },
-                "v",
-                HT.VERSION,
-                " \u00B7 ",
-                HT.CREDIT))));
+                HT.CREDIT,
+                React.createElement("span", null,
+                    "v",
+                    HT.VERSION)))));
 }
 /* ---------- באנר עליון ותפריט ---------- */
 function Section({ title, children, defaultOpen }) {
@@ -137,7 +137,8 @@ function Section({ title, children, defaultOpen }) {
     return (React.createElement("div", { className: "section" + (open ? " open" : "") },
         React.createElement("button", { className: "section-head", onClick: () => setOpen(!open), "aria-expanded": open },
             React.createElement("span", null, title),
-            React.createElement("i", { className: "chev", "aria-hidden": "true" }, "\u2304")),
+            React.createElement("svg", { className: "chev", viewBox: "0 0 16 16", "aria-hidden": "true" },
+                React.createElement("path", { d: "M3.5 6l4.5 4.5L12.5 6" }))),
         open ? React.createElement("div", { className: "section-body" }, children) : null));
 }
 function PlusIcon() {
@@ -417,22 +418,26 @@ function Drawer({ open, onClose, month, monthKey, onChange, inherited, theme, se
                     React.createElement(PasswordChange, null)),
                 React.createElement("button", { className: "btn ghost wide", onClick: () => firebase.auth().signOut() }, "\u05D9\u05E6\u05D9\u05D0\u05D4 \u05DE\u05D4\u05D7\u05E9\u05D1\u05D5\u05DF"),
                 React.createElement("p", { className: "credit", dir: "ltr" },
-                    "v",
-                    HT.VERSION,
-                    " \u00B7 ",
-                    HT.CREDIT)))));
+                    HT.CREDIT,
+                    React.createElement("span", null,
+                        "v",
+                        HT.VERSION))))));
 }
 /* ---------- ניווט חודשים ---------- */
 function MonthNav({ monthKey, onShift, status, onRetry }) {
     return (React.createElement("div", { className: "monthnav" },
         React.createElement("button", { className: "ghost", onClick: () => onShift(-1), disabled: !HT.canGoBack(monthKey), "aria-label": "\u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05E7\u05D5\u05D3\u05DD" },
             React.createElement(Chevron, { dir: "right" })),
-        React.createElement("h2", { className: "month-title" }, HT.monthLabel(monthKey)),
+        React.createElement("h2", { className: "month-title" },
+            React.createElement("span", { className: "m-name" }, HT.monthLabel(monthKey).split(" ")[0]),
+            React.createElement("span", { className: "m-year" }, HT.parseMonthKey(monthKey).year)),
         React.createElement("button", { className: "ghost", onClick: () => onShift(1), "aria-label": "\u05D4\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0" },
             React.createElement(Chevron, { dir: "left" })),
         status === "error"
             ? React.createElement("button", { className: "status error retry", onClick: onRetry }, "\u05DC\u05D0 \u05E0\u05E9\u05DE\u05E8 \u00B7 \u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1")
-            : React.createElement("span", { className: "status " + status }, status === "saving" ? "שומר…" : "נשמר")));
+            : React.createElement("span", { className: "status " + status },
+                React.createElement("i", { className: "dot" }),
+                status === "saving" ? "שומר" : "נשמר")));
 }
 /* ---------- טבלת הנושאים ---------- */
 function HabitGrid({ month, monthKey, today, rowH, headH, onToggle, fluid, dayCol, onOpenDay }) {
@@ -520,9 +525,10 @@ function Summary({ month, monthKey, now, bare }) {
                 React.createElement("b", null, s.name),
                 React.createElement("i", null,
                     s.done,
-                    "/",
-                    s.counted,
-                    " \u00B7 \u05E8\u05E6\u05E3 ",
+                    " \u05DE\u05EA\u05D5\u05DA ",
+                    s.counted),
+                React.createElement("i", { className: "muted" },
+                    "\u05D4\u05E8\u05E6\u05E3 \u05D4\u05D0\u05E8\u05D5\u05DA: ",
                     s.best))))))));
 }
 /* ---------- דיאלוג אישור ---------- */
@@ -735,15 +741,18 @@ function PrintSheet({ month, monthKey, now }) {
                     React.createElement("td", { className: "wide" }, day.moment)));
             }))),
         React.createElement("ul", { className: "print-stats" }, stats.map((s) => (React.createElement("li", { key: s.id },
-            s.name,
-            ": ",
+            React.createElement("b", null, s.name),
+            " ",
             s.percent,
-            "% (",
-            s.done,
-            "/",
-            s.counted,
-            ") \u00B7 \u05E8\u05E6\u05E3 ",
-            s.best)))),
+            "% ",
+            React.createElement("span", null,
+                "(",
+                s.done,
+                " \u05DE\u05EA\u05D5\u05DA ",
+                s.counted,
+                ", \u05E8\u05E6\u05E3 ",
+                s.best,
+                ")"))))),
         month.nextMonth ? React.createElement("p", { className: "print-next" },
             "\u05DC\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0: ",
             month.nextMonth) : null,
