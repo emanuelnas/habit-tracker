@@ -23,7 +23,7 @@ var HT = (function () {
 
   var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
 
-  var VERSION = "3.4.0";
+  var VERSION = "4.0.1";
   var CREDIT = "Emanuel Nassimiha 2026";
 
   /* ---------- תאריכים ---------- */
@@ -327,16 +327,16 @@ var HT = (function () {
     return segs;
   }
 
-  /** תחום גרף המשקל: תמיד עד הכפולה של 5 הקרובה כלפי חוץ (67→65, 73→75) */
+  /** תחום גרף המשקל: תקרה בקילו השלם שמעל המדידה הגבוהה, וחלון של 5 ק"ג מתחתיה */
   function weightBounds(points) {
     var vals = points.filter(function (p) { return p.value !== null; })
                      .map(function (p) { return p.value; });
-    if (!vals.length) return { min: 70, max: 75, empty: true };
+    if (!vals.length) return { min: 68, max: 73, empty: true };
     var lo = Math.min.apply(null, vals);
     var hi = Math.max.apply(null, vals);
-    var min = Math.floor(lo / 5) * 5;
-    var max = Math.ceil(hi / 5) * 5;
-    if (max - min < 5) max = min + 5;
+    var max = Math.ceil(hi);
+    if (max === hi) max = hi + 1;          /* מדידה על קילו עגול לא תיגע בתקרה */
+    var min = Math.min(Math.floor(lo), max - 5);
     return { min: min, max: max, empty: false };
   }
 
