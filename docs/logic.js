@@ -23,7 +23,7 @@ var HT = (function () {
 
   var FIRST_MONTH = "2026-09"; // לא חוזרים אחורה מספטמבר 2026
 
-  var VERSION = "2.7.0";
+  var VERSION = "4.0.0";
   var CREDIT = "Emanuel Nassimiha 2026";
 
   /* ---------- תאריכים ---------- */
@@ -173,6 +173,33 @@ var HT = (function () {
     return !!getDay(month, day).marks[habitId];
   }
 
+  /** מנקה יום שלם: רגע, שינה, משקל וכל הסימונים */
+  function clearDay(month, day) {
+    var days = {};
+    Object.keys(month.days).forEach(function (k) { if (k !== String(day)) days[k] = month.days[k]; });
+    return { habits: month.habits, days: days, nextMonth: month.nextMonth };
+  }
+
+  /** מדליק או מכבה נושא על טווח ימים רצוף */
+  function setRange(month, habitId, from, to, on) {
+    var lo = Math.min(from, to), hi = Math.max(from, to);
+    var next = month;
+    for (var d = lo; d <= hi; d++) {
+      if (isMarked(next, d, habitId) !== !!on) next = toggleMark(next, d, habitId);
+    }
+    return next;
+  }
+
+  /** פריטים מהערת "לחודש הבא" שעדיין אינם נושאים בחודש הנוכחי */
+  function nextMonthItems(note, habits) {
+    if (!note) return [];
+    var taken = {};
+    (habits || []).forEach(function (h) { taken[h.name.trim()] = true; });
+    return note.split(/[,\n]/)
+      .map(function (x) { return x.trim(); })
+      .filter(function (x) { return x.length > 0 && x.length <= 40 && !taken[x]; });
+  }
+
   function newHabitId(existing) {
     var taken = {};
     (existing || []).forEach(function (h) { taken[h.id] = true; });
@@ -300,16 +327,16 @@ var HT = (function () {
     return segs;
   }
 
-  /** תחום גרף המשקל: תמיד עד הכפולה של 5 הקרובה כלפי חוץ (67→65, 73→75) */
+  /** תחום גרף המשקל: תקרה בקילו השלם שמעל המדידה הגבוהה, וחלון של 5 ק"ג מתחתיה */
   function weightBounds(points) {
     var vals = points.filter(function (p) { return p.value !== null; })
                      .map(function (p) { return p.value; });
-    if (!vals.length) return { min: 70, max: 75, empty: true };
+    if (!vals.length) return { min: 68, max: 73, empty: true };
     var lo = Math.min.apply(null, vals);
     var hi = Math.max.apply(null, vals);
-    var min = Math.floor(lo / 5) * 5;
-    var max = Math.ceil(hi / 5) * 5;
-    if (max - min < 5) max = min + 5;
+    var max = Math.ceil(hi);
+    if (max === hi) max = hi + 1;          /* מדידה על קילו עגול לא תיגע בתקרה */
+    var min = Math.min(Math.floor(lo), max - 5);
     return { min: min, max: max, empty: false };
   }
 
@@ -403,6 +430,74 @@ var HT = (function () {
     return out;
   }
 
+  /** סיכום חודשי במלל: הרגלים, שינה ומשקל בכמה משפטים */
+  function monthNarrative(month, monthKeyStr, now) {
+    var counted = countedDays(monthKeyStr, now);
+    if (!counted) return "";
+    var stats = habitStats(month, monthKeyStr, now);
+    var parts = [];
+    var label = monthLabel(monthKeyStr);
+    var d, v;
+
+    if (stats.length) {
+      var done = 0, possible = 0;
+      stats.forEach(function (st) { done += st.done; possible += st.counted; });
+      var pct = possible ? Math.round((done / possible) * 100) : 0;
+      var sorted = stats.slice().sort(function (x, y) { return y.percent - x.percent; });
+      var top = sorted[0], low = sorted[sorted.length - 1];
+      var head = "ב" + label + " עמדת ב-" + pct + "% מהסימונים האפשריים, על פני " +
+                 counted + " ימים ו-" + stats.length + " נושאים.";
+      if (top.percent === 0) {
+        head += " עוד לא סימנת כלום החודש.";
+      } else if (stats.length > 1 && top.percent !== low.percent) {
+        head += " הכי חזק: “" + top.name + "” עם " + top.percent + "%" +
+                (top.best >= 3 ? " ורצף של " + top.best + " ימים" : "") +
+                ". הכי חלש: “" + low.name + "” עם " + low.percent + "%.";
+      }
+      parts.push(head);
+    }
+
+    var sleeps = [];
+    for (d = 1; d <= counted; d++) { v = getDay(month, d).sleep; if (v !== null) sleeps.push({ day: d, value: v }); }
+    if (sleeps.length >= 3) {
+      var mid = Math.ceil(counted / 2);
+      var first = sleeps.filter(function (x) { return x.day <= mid; }).map(function (x) { return x.value; });
+      var second = sleeps.filter(function (x) { return x.day > mid; }).map(function (x) { return x.value; });
+      var sentence = "ממוצע השינה עמד על " + Math.round(avg(sleeps.map(function (x) { return x.value; }))) +
+                     " לאורך " + sleeps.length + " לילות שנרשמו";
+      if (first.length >= 2 && second.length >= 2) {
+        var gap = Math.round(avg(second) - avg(first));
+        sentence += Math.abs(gap) < 3
+          ? ", יציב בין תחילת החודש לסופו."
+          : (gap > 0 ? ", והשתפר ב-" + gap + " נקודות במחצית השנייה."
+                     : ", וירד ב-" + Math.abs(gap) + " נקודות במחצית השנייה.");
+      } else { sentence += "."; }
+      var lo2 = sleeps.slice().sort(function (x, y) { return x.value - y.value; })[0];
+      var hi2 = sleeps.slice().sort(function (x, y) { return y.value - x.value; })[0];
+      sentence += " הלילה הטוב ביותר היה ה-" + hi2.day + " (" + hi2.value + ") והגרוע ה-" + lo2.day + " (" + lo2.value + ").";
+      parts.push(sentence);
+    } else if (sleeps.length) {
+      parts.push("נרשמו רק " + sleeps.length + " ציוני שינה החודש, מעט מכדי להסיק מהם מגמה.");
+    }
+
+    var ws = [];
+    for (d = 1; d <= counted; d++) { v = getDay(month, d).weight; if (v !== null) ws.push({ day: d, value: v }); }
+    if (ws.length >= 2) {
+      var delta = Math.round((ws[ws.length - 1].value - ws[0].value) * 10) / 10;
+      var wsent = "המשקל נמדד " + ws.length + " פעמים, מ-" + ws[0].value + " ביום " + ws[0].day +
+                  " ועד " + ws[ws.length - 1].value + " ביום " + ws[ws.length - 1].day;
+      wsent += delta === 0 ? " — בלי שינוי נטו."
+             : (delta < 0 ? " — ירידה של " + Math.abs(delta) + ' ק"ג.' : " — עלייה של " + delta + ' ק"ג.');
+      parts.push(wsent);
+    }
+
+    var moments = 0;
+    for (d = 1; d <= counted; d++) if (getDay(month, d).moment) moments++;
+    if (moments) parts.push("רשמת רגע זכור ב-" + moments + " מתוך " + counted + " הימים.");
+
+    return parts.join(" ");
+  }
+
   function shortMonthLabel(key) {
     var pp = parseMonthKey(key);
     return HEB_MONTHS[pp.month - 1].slice(0, 3) + " " + String(pp.year).slice(2);
@@ -471,6 +566,10 @@ var HT = (function () {
     countedDays: countedDays,
     habitStats: habitStats,
     insights: insights,
+    monthNarrative: monthNarrative,
+    clearDay: clearDay,
+    setRange: setRange,
+    nextMonthItems: nextMonthItems,
     idleExpired: idleExpired,
     shortMonthLabel: shortMonthLabel,
     series: series,
